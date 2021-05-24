@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <string.h>
 	
 static const int MEMORY_CAPACITY = 65536;
 static const int BYTES_IN_A_WORD = 4;
 static const int BITS_IN_A_CHAR = 8;
+static const int BITS_IN_A_WORD = 32;
 
 
 void readChars(char *source, unsigned char* destination) {
@@ -26,20 +28,34 @@ int countChars(char *source) {
 	return len;
 }
 
-int coundWords(char *source) {
-	return countChars(source) / BYTES_IN_A_WORD;
-}
-
-void printChar(unsigned char input) {
+char * charToBinaryString(unsigned char input) {
+	char *binStr = (char *) malloc(BITS_IN_A_CHAR);
 	unsigned char mask = 1 << (BITS_IN_A_CHAR - 1); 
 	for (int i = 0; i < BITS_IN_A_CHAR; i++) {
 		if ((input & mask) != 0) {
-			printf("1");
+			*(binStr + i) = '1';
 		} else {
-			printf("0");
+			*(binStr + i) = '0';
 		}
 		mask = mask >> 1;
 	}
+	*(binStr + BITS_IN_A_CHAR) = '\0';
+	return binStr;
+}
+
+void printChar(unsigned char input) {
+	char *binStr = charToBinaryString(input);	
+	while (*binStr != '\0') {
+		printf("%c", *binStr);
+		binStr++;
+	}
+}
+
+void printWord(char *word) {
+	for (int i = 0; i < BYTES_IN_A_WORD; i++) {
+		printf("%c", *(word + i));
+	}
+	printf("\n");
 }
 
 void printMemory(unsigned char *memory, int occupiedLength) {
@@ -64,6 +80,17 @@ bool wasFileProvided(int argc) {
 	return argc >= 2;
 }
 
+// This function abstracts out a single word from the memory and returns
+// a binary string. 
+char * readWordFromMemoryAt(int address, unsigned char *memory) {
+	char *str = malloc(BITS_IN_A_WORD);
+	char *ptr = str;
+	for (int i = address; i < address + BYTES_IN_A_WORD ; i++) {
+		strcpy(ptr, charToBinaryString(*(memory + i)));
+		ptr+=8;
+	} 
+	return str;
+}
 
 int main(int argc, char **argv) {
 	/*
@@ -87,6 +114,9 @@ int main(int argc, char **argv) {
 
 	printMemoryHex(memory, len);
 
+	char *word = readWordFromMemoryAt(0, memory);
+
+	printWord(word);
 
   return EXIT_SUCCESS;
 }
