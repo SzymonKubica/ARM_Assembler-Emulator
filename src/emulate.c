@@ -2,10 +2,11 @@
 #include <stdio.h>
 
 #define PC 15
+#define CPSR 16
 #define memorySize 65536
 
 
-//returns number of words
+// parse file into fileArray and update num words
 void parse_file (unsigned char *fileArray, const char *arg, int *words) {
 	
 	FILE *file;
@@ -31,16 +32,16 @@ void parse_file (unsigned char *fileArray, const char *arg, int *words) {
 
 int main(int argc, char **argv) {
 	
-	FILE *file;
-
-	file = fopen(argv[1],"rb");
-
 	unsigned char *memory = malloc(memorySize); // holds entire file
-	unsigned short registers[16];
+	unsigned long int registers[17];
+
+	for (int i = 0; i < 17; i++){
+		registers[i] = 0;
+	}
 
 	int num_words = 0;
 
-	parse_file(memory, argv[1], &num_words);
+	parse_file (memory, argv[1], &num_words);
 
 	/*
 	// print file as hex 
@@ -51,6 +52,18 @@ int main(int argc, char **argv) {
 	printf("\n");
 	*/
 
+	// print output
+	// print program state
+	for (int i = 0; i < 13; i++) {
+		printf("$%d : %ld (0x%08lx)\n", i, registers[i],registers[i]);
+	}
+
+	printf("PC : %ld (0x%08lx)\n", registers[PC], registers[PC]);
+	printf("CPSR : %ld (0x%08lx)\n", registers[CPSR], registers[CPSR]);
+
+	printf("Non-zero memory:\n");
+	// printf("%d\n", num_words);
+	
 	// print addresses: words 
 	for (int i = 0; i < num_words; i++) {
 		printf("0x%08x: 0x", i * 4);
