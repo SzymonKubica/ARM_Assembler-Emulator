@@ -1,32 +1,13 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
-#include <stdbool.h>
 #include <string.h>
+#include "fileInput.h"
+#include "binaryUtils.h"
 	
 static const int MEMORY_CAPACITY = 65536;
 static const int BYTES_IN_A_WORD = 4;
 static const int BITS_IN_A_CHAR = 8;
 static const int BITS_IN_A_WORD = 32;
-
-
-void readChars(char *source, unsigned char* destination) {
-	FILE *ptr;
-	ptr = fopen(source, "rb");
-	fread(destination, MEMORY_CAPACITY, 1, ptr);
-}
-
-int countChars(char *source) {
-	FILE *ptr;
-	ptr = fopen(source, "rb");
-	char ch = getc(ptr);
-	int len = 0;
-	while (ch != EOF) {
-		len++;
-		ch = getc(ptr);
-	}
-	return len;
-}
 
 char * charToBinaryString(unsigned char input) {
 	char *binStr = (char *) malloc(BITS_IN_A_CHAR);
@@ -77,10 +58,6 @@ void printMemoryHex(unsigned char *memory, int occupiedLength) {
 		printf("%x ", *(memory + i));
 	}
 	printf("\n");
-}
-
-bool wasFileProvided(int argc) {
-	return argc >= 2;
 }
 
 // This function abstracts out a single word from the memory and returns
