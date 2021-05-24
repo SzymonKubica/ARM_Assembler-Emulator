@@ -52,8 +52,11 @@ void printChar(unsigned char input) {
 }
 
 void printWord(char *word) {
-	for (int i = 0; i < BYTES_IN_A_WORD; i++) {
+	for (int i = 0; i < BITS_IN_A_WORD; i++) {
 		printf("%c", *(word + i));
+		if (i % BITS_IN_A_CHAR == 7) {
+			printf(" ");
+		}
 	}
 	printf("\n");
 }
@@ -114,7 +117,7 @@ int main(int argc, char **argv) {
 
 	printMemoryHex(memory, len);
 
-	char *word = readWordFromMemoryAt(0, memory);
+  char *word = readWordFromMemoryAt(0, memory);
 
 	printWord(word);
 
