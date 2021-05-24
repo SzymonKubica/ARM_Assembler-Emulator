@@ -50,6 +50,7 @@ unsigned char checkCond (unsigned char c, unsigned long int CPSR) {
 
 }
 
+// debugging
 int main (void) {
 
 	unsigned long int CPSR = 0b0000 << 28;
