@@ -27,8 +27,44 @@ unsigned char get_Rd (unsigned char thirdByte) {
 }
 
 // short: 2 bytes
-unsigned short get_Operand2 (unsigned char thirdByte, unsigned char fourthByte) {
-    return ((thirdByte & 0b1111) << 8) | fourthByte;
+unsigned short get_Operand2 (unsigned char thirdByte, unsigned char fourthByte, 
+unsigned char immediate_operand) {
+
+
+    // Operand2 immediate value
+    if (immediate_operand) {
+        unsigned char rotation = thirdByte & 0b1111; 
+        return fourthByte >> rotation | fourthByte << (32 - rotation);
+    }
+
+    else {
+        // TODO: Operand2 register
+    }
+}
+
+void execute_operation (unsigned char opCode, unsigned long int *registers, 
+unsigned char Rn, unsigned char Rd, unsigned short operand2) {
+    
+    // unsigned long int * destination = &registers[Rd];
+
+
+    // TODO: implement CPSR manipulation
+    switch (opCode) {
+        case and:
+            registers[Rd] = registers[Rn] & operand2;
+            break;
+        case eor:
+            registers[Rd] = registers[Rn] ^ operand2;
+            break;
+        case sub:
+            registers[Rd] = registers[Rn] - operand2;
+            break;
+        case add:
+            registers[Rd] = operand2 - registers[Rn];
+            break; 
+        
+    }
+
 }
 
 int main (void) {
