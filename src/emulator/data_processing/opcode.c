@@ -49,12 +49,14 @@ Byte immediate_operand) {
 		// The shift is specified by the second half of the thirdByte and the 
 		// first half of the fourthByte.
 		Byte shift = (thirdByte & 0b1111 << 4) | (fourthByte >> 4);
+        Byte shiftType = shift & 0b110;
 		if (!(shift * 0b1)) { // Bit 4 is 0: shift by a constant.
+            unsigned int shiftValue = shift >> 3;
 		} else {// Bit 4 is 1: shift by a specified register.
-					
+            Byte shiftRegister = shift >> 4;
 		}
     }
-	return Byte;
+	// TODO: return in the second case.
 }
 
 void execute_operation (Byte opCode, unsigned long int *registers, 
