@@ -10,6 +10,14 @@
 #define cmp 0b1100
 #define mov 0b1101
 
+#define lsl 0b00
+#define lsr 0b01
+#define asr 0b10
+#define ror 0b11
+
+
+
+
 unsigned char immediate_operand (unsigned char firstByte) {
     return firstByte & 1;
 }
@@ -37,8 +45,17 @@ unsigned char immediate_operand) {
         return fourthByte >> rotation | fourthByte << (32 - rotation);
     }
 
+		// Operand2 register
     else {
-        // TODO: Operand2 register
+				// The shift is specified by the second half of the thirdByte and the 
+				// first half of the fourthByte.
+				unsigned char shift = thirdByte & 0b1111 << 4 | fourthByte >> 4;
+				if (!(shift * 0b1)) { // Bit 4 is 0: shift by a constant.
+						
+				} else {// Bit 4 is 1: shift by a specified register.
+					
+				}
+
     }
 }
 
