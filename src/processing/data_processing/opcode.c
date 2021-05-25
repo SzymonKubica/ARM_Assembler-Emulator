@@ -15,52 +15,50 @@
 #define asr 0b10
 #define ror 0b11
 
+typedef unsigned char Byte;
 
-
-
-unsigned char immediate_operand (unsigned char firstByte) {
+Byte immediate_operand (Byte firstByte) {
     return firstByte & 1;
 }
 
-unsigned char get_OpCode (unsigned char firstByte, unsigned char secondByte) {
-	return (firstByte & 1) + secondByte >> 4;
+Byte get_OpCode (Byte firstByte, Byte secondByte) {
+    return ((firstByte & 1) + secondByte) >> 4;
 }
 
-unsigned char get_Rn (unsigned char secondByte) {
+Byte get_Rn (Byte secondByte) {
     return secondByte & 0b1111;
 }
 
-unsigned char get_Rd (unsigned char thirdByte) {
+Byte get_Rd (Byte thirdByte) {
     return thirdByte >> 4;
 }
 
 // short: 2 bytes
-unsigned short get_Operand2 (unsigned char thirdByte, unsigned char fourthByte, 
-unsigned char immediate_operand) {
+unsigned short get_Operand2 (Byte thirdByte, Byte fourthByte, 
+Byte immediate_operand) {
 
 
     // Operand2 immediate value
-    if (immediate_operand) {
-        unsigned char rotation = thirdByte & 0b1111; 
-        return fourthByte >> rotation | fourthByte << (32 - rotation);
+	if (immediate_operand) {
+        Byte rotation = thirdByte & 0b1111; 
+        return (fourthByte >> rotation) | (fourthByte << (32 - rotation));
     }
 
 	// Operand2 register
-    else {
+	else {
 		// The shift is specified by the second half of the thirdByte and the 
 		// first half of the fourthByte.
-		unsigned char shift = thirdByte & 0b1111 << 4 | fourthByte >> 4;
+		Byte shift = (thirdByte & 0b1111 << 4) | (fourthByte >> 4);
 		if (!(shift * 0b1)) { // Bit 4 is 0: shift by a constant.
-		
 		} else {// Bit 4 is 1: shift by a specified register.
 					
 		}
-
     }
+	return Byte;
 }
 
-void execute_operation (unsigned char opCode, unsigned long int *registers, 
-unsigned char Rn, unsigned char Rd, unsigned short operand2) {
+void execute_operation (Byte opCode, unsigned long int *registers, 
+Byte Rn, Byte Rd, unsigned short operand2) {
     
     // unsigned long int * destination = &registers[Rd];
 
@@ -85,7 +83,7 @@ unsigned char Rn, unsigned char Rd, unsigned short operand2) {
 }
 
 int main (void) {
-    unsigned char tb = 0b10001000, fob = 0b10000000;
+    Byte tb = 0b10001000, fob = 0b10000000;
     printf ("%d \n", get_Rd(tb));
     printf ("%d \n", get_Operand2(tb, fob));
 
