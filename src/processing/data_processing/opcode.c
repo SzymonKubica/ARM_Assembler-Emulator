@@ -23,7 +23,7 @@ unsigned char immediate_operand (unsigned char firstByte) {
 }
 
 unsigned char get_OpCode (unsigned char firstByte, unsigned char secondByte) {
-    return (firstByte & 1) + secondByte >> 4;
+	return (firstByte & 1) + secondByte >> 4;
 }
 
 unsigned char get_Rn (unsigned char secondByte) {
@@ -51,7 +51,7 @@ unsigned char immediate_operand) {
 		// first half of the fourthByte.
 		unsigned char shift = thirdByte & 0b1111 << 4 | fourthByte >> 4;
 		if (!(shift * 0b1)) { // Bit 4 is 0: shift by a constant.
-						
+		
 		} else {// Bit 4 is 1: shift by a specified register.
 					
 		}
