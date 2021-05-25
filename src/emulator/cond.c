@@ -1,4 +1,5 @@
 #include "cond.h"
+#include "../defns.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -10,24 +11,24 @@
 #define le 0b1101
 #define al 0b1110
 
-unsigned char getCond (unsigned char c) {
+byte_t getCond (unsigned char c) {
 	return c >> 4;
 }
 
-unsigned char get_NZCV (unsigned long int CPSR) {
+byte_t get_NZCV (unsigned long int CPSR) {
 	return CPSR >> 28;
 }
 
-unsigned char z_set (unsigned char NZCV) {
+byte_t z_set (unsigned char NZCV) {
 	return NZCV & (1 << 2);
 }
 
-unsigned char n_equal_v (unsigned char NZCV) {
+byte_t n_equal_v (unsigned char NZCV) {
 	// printf("%x\n", NZCV);
 	return (NZCV & 1) == ((NZCV >> 3) & 1) ;
 }
-unsigned char checkCond (unsigned char c, unsigned long int CPSR) {
-	unsigned char NZCV = get_NZCV(CPSR);
+byte_t checkCond (byte_t c, unsigned long int CPSR) {
+	byte_t NZCV = get_NZCV(CPSR);
 
 	switch (c) 	{
 		case al:
