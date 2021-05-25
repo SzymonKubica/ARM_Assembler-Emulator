@@ -19,8 +19,8 @@ int length(char *str) {
 	return length;
 }
 
-Byte readBinary(char *str) {
-	Byte byte = 0x0;
+byte_t readBinary(char *str) {
+	byte_t byte = 0x0;
 	for (int i = length(str), j = -1; i >= 0; i--, j++) {
 		if (*(str + i) == '1') {
 			byte += (1 << j);
