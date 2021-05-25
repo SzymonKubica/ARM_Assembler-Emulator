@@ -52,7 +52,9 @@ Byte immediate_operand) {
         Byte shiftType = shift & 0b110;
 		if (!(shift * 0b1)) { // Bit 4 is 0: shift by a constant.
             unsigned int shiftValue = shift >> 3;
+            return shift; //TODO: Rm needs to be modified by a specific shift and returned.
 		} else {// Bit 4 is 1: shift by a specified register.
+            // This part is optional.
             Byte shiftRegister = shift >> 4;
 		}
     }
