@@ -35,7 +35,7 @@ byte_t get_Rd (byte_t thirdByte) {
 }
 
 // shifts bits according to shiftType
-Word shifter (Byte shiftType, Byte shiftAmount, Word word) {
+Word shifter (byte_t shiftType, byte_t shiftAmount, Word word) {
 	switch (shiftType){
 		case 0: // logical left
 			return word << shiftAmount;
@@ -57,28 +57,28 @@ byte_t immediate_operand) {
 
 	// Operand2 immediate value
 	if (immediate_operand) {
-		Byte rotation = (thirdByte & 0b1111) << 1; 
+		byte_t rotation = (thirdByte & 0b1111) << 1; 
 		return shifter (3, rotation, fourthByte);
 	}
 
 	// Operand2 register
 	else {		
-		Byte Rm = fourthByte & 0b1111;
+		byte_t Rm = fourthByte & 0b1111;
 
 		// The shift is specified by the second half of the thirdByte and the 
 		// first half of the fourthByte.
 
-		Byte shift = (thirdByte & 0b1111 << 4) | (fourthByte >> 4);
-		Byte shiftType = shift & 0b110 >> 1;
+		byte_t shift = (thirdByte & 0b1111 << 4) | (fourthByte >> 4);
+		byte_t shiftType = shift & 0b110 >> 1;
 
 		Word wordToShift = registers[Rm];
 
 			if (!(shift & 0b1)) { // Bit 4 is 0: shift by a constant.
-				Byte integer = shift >> 3;
+				byte_t integer = shift >> 3;
 				return shifter (shiftType, integer, wordToShift); 
 			} else {// Bit 4 is 1: shift by a specified register.
 				// This part is optional?
-				Byte shiftRegister = shift >> 4;
+				byte_t shiftRegister = shift >> 4;
 				return shifter (shiftType, registers[shiftRegister], wordToShift);
 			}
 	}
@@ -88,8 +88,8 @@ byte_t immediate_operand) {
 
 // TODO:
 /*
-void execute_operation (Byte opCode, unsigned long int *registers, 
-		Byte Rn, Byte Rd, unsigned short operand2) {
+void execute_operation (byte_t opCode, unsigned long int *registers, 
+		byte_t Rn, byte_t Rd, unsigned short operand2) {
 
 	// unsigned long int * destination = &registers[Rd];
 
@@ -120,7 +120,7 @@ int main (void) {
 	Word registers[17];
 	memset (registers, 0, 1);
 
-	Byte tb = 0b10001000, fob = 0b10000000;
+	byte_t tb = 0b10001000, fob = 0b10000000;
 	printf ("%d \n", get_Rd(tb));
 	printf ("%d \n", get_Operand2(tb, fob));
 
