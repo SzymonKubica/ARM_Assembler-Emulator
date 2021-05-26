@@ -52,8 +52,7 @@ word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word) {
 
 // short: 2 bytes
 unsigned short get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
-byte_t immediate_operand) {
-
+byte_t immediate_operand, word_t * registers) {
 
 	// Operand2 immediate value
 	if (immediate_operand) {
@@ -85,7 +84,9 @@ byte_t immediate_operand) {
 	}
 }
 
-
+byte_t get_Set_Condition_Code (byte_t thirdByte) {
+	return (thirdByte >> 4) & 1;
+}
 
 // TODO:
 /*
@@ -113,9 +114,9 @@ void execute_operation (byte_t opCode, Word *registers,
 	}
 
 }
-*/
 
-/*
+
+
 int main (void) {
 
 	word_t registers[17];
