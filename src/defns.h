@@ -8,7 +8,5 @@
 typedef unsigned char byte_t;
 typedef unsigned long int word_t;
 
-typedef unsigned long int word_t;
-
 #endif
 

@@ -36,7 +36,7 @@ void parse_file (byte_t *fileArray, const char *arg, int *words) {
 int main(int argc, char **argv) {
 	
 	byte_t *memory = malloc(memorySize); // holds entire file
-	unsigned long int registers[17];
+	word_t registers[17];
 
 	for (int i = 0; i < 17; i++){
 		registers[i] = 0;

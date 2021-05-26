@@ -11,6 +11,8 @@
  * Pre: the number is less than or equal 8 bits.
  */
 
+
+// NOT NECESSARY: use strlen(str) funciton
 int length(char *str) {
 	int length = 0;
 	for (; *str != '\0'; str++) {
