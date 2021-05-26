@@ -17,25 +17,27 @@
 #define asr 2 //0b10
 #define ror 3 //0b11
 
-
-byte_t immediate_operand (byte_t firstByte) {
+static byte_t get_immediate_operand (byte_t firstByte) {
     return (firstbyte & 2) >> 1;
 }
 
-byte_t get_OpCode (byte_t firstByte, byte_t secondByte) {
+static byte_t get_OpCode (byte_t firstByte, byte_t secondByte) {
     return ((firstByte & 1) + secondByte) >> 4;
 }
 
-byte_t get_Rn (byte_t secondByte) {
+static byte_t get_Rn (byte_t secondByte) {
     return secondByte & readBinary("1111");
 }
 
-byte_t get_Rd (byte_t thirdByte) {
+static byte_t get_Rd (byte_t thirdByte) {
     return thirdByte >> 4;
 }
 
-// shifts bits according to shiftType
-word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word) {
+static byte_t get_S (byte_t secondByte) {
+	return get_First_Nibble(secondByte) & 1;
+}
+
+static word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word) {
 	switch (shiftType){
 		case 0: // logical left
 			return word << shiftAmount;
@@ -45,13 +47,12 @@ word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word) {
 			return word /  (1 << shiftAmount);
 		case 3: // rotate right
 			return  (word >> shiftAmount) | (word << (32 - shiftAmount));
-		default: // should never be reached
-			return 0;
+		default: // ERROR: Should never be reached
+			return -1;
 	}
 } 
 
-// short: 2 bytes
-unsigned short get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
+static unsigned short get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
 byte_t immediate_operand, word_t * registers) {
 
 	// Operand2 immediate value
@@ -73,49 +74,87 @@ byte_t immediate_operand, word_t * registers) {
 		//TODO: Issue: Compilation fails because registers is out of scope in the function.
 		word_t wordToShift = registers[Rm];
 
-			if (!(shift & 1)) { // Bit 4 is 0: shift by a constant.
-				byte_t integer = shift >> 3;
-				return shifter (shiftType, integer, wordToShift); 
-			} else {// Bit 4 is 1: shift by a specified register.
-				// This part is optional?
-				byte_t shiftRegister = shift >> 4;
-				return shifter (shiftType, registers[shiftRegister], wordToShift);
-			}
+		if (!(shift & 1)) { // Bit 4 is 0: shift by a constant.
+			byte_t integer = shift >> 3;
+			return shifter (shiftType, integer, wordToShift); 
+		} else {// Bit 4 is 1: shift by a specified register.
+			// This part is optional?
+			byte_t shiftRegister = shift >> 4;
+			return shifter (shiftType, registers[shiftRegister], wordToShift);
+		}
 	}
 }
 
-byte_t get_Set_Condition_Code (byte_t thirdByte) {
+static byte_t get_Set_Condition_Code (byte_t thirdByte) {
 	return (thirdByte >> 4) & 1;
 }
 
-// TODO:
-/*
-void execute_operation (byte_t opCode, Word *registers, 
-		byte_t Rn, byte_t Rd, unsigned short operand2) {
-
-	// unsigned long int * destination = &registers[Rd];
-
-
-	// TODO: implement CPSR manipulation
-	switch (opCode) {
-		case and:
-			registers[Rd] = registers[Rn] & operand2;
-			break;
-		case eor:
-			registers[Rd] = registers[Rn] ^ operand2;
-			break;
-		case sub:
-			registers[Rd] = registers[Rn] - operand2;
-			break;
-		case add:
-			registers[Rd] = operand2 - registers[Rn];
-			break; 
-
+static void set_CPSR (word_t result, word_t *cspr) {
+	// Set N-bit
+	*cpsr &= 0x7fffffff;
+	*cpsr |= (result >> 31) << 31;
+	// Set Z-bit -- DOUBLE CHECK if-and-only-if on page VI of spec
+	if(!result) {
+		*cpsr |= 0x40000000;
+	} else {
+		*cpsr &= 0xbfffffff;
 	}
-
+	// TODO: Set C-bit
 }
 
 
+void execute_data_processing (byte_t *firstByte, word_t *registers) {
+	unsigned short operand2 
+		= get_Operand2(firstByte[2], firstByte[3], get_immediate_operand(firstByte[0]), registers); 
+	byte_t Rn = get_Rn(firstByte[1]);
+	byte_t Rd = get_Rd(firstByte[2]);
+	byte_t opCode = get_OpCode(firstByte[0], firstByte[1]);
+	word_t result = 0; 
+
+	switch (opCode) {
+		case and:
+			registers[Rd] = registers[Rn] & operand2;
+			result = registers[Rd]; 
+			break;
+		case eor:
+			registers[Rd] = registers[Rn] ^ operand2;
+			result = registers[Rd];
+			break;
+		case sub:
+			registers[Rd] = registers[Rn] - operand2;
+			result = registers[Rd]; 
+			break;
+		case rsb:
+			registers[Rd] = operand2 - registers[Rn];
+			result = registers[Rd]; 
+			break;
+		case add:
+			registers[Rd] = registers[Rn] + operand2;
+			result = registers[Rd]; 
+			break;
+		case tst:
+			result = registers[Rn] & operand2; 
+			break;
+		case teq: 
+			result = registers[Rn] ^ operand2; 
+			break;
+		case cmp:
+			result = registers[Rn] - operand2; 
+			break;
+		case orr:
+			registers[Rd] = registers[Rn] | operand2; 
+			result = registers[Rd];
+			break;
+		case mov:
+			registers[Rd] = operand2; 
+			result = registers[Rd]; 
+			break; 	
+	}
+
+	if (get_S(firstByte[1])) {
+		set_CPSR(result, &registers[16]); 
+	}
+}
 
 int main (void) {
 
@@ -128,4 +167,3 @@ int main (void) {
 
 	return 0;
 }
-*/
