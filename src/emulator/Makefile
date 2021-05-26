@@ -8,6 +8,7 @@ clean:
 	cd branch; make clean
 	cd single_data_processing; make clean
 	cd multiply; make clean
+	cd common_functions; make clean
 	
 libs: 
 	cd ../lib; make
@@ -16,6 +17,7 @@ libs:
 	cd single_data_processing; make
 	cd multiply; make
 	cd data_processing; make
+	cd common_functions; make
 
 
 

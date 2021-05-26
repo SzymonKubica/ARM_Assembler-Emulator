@@ -1,7 +1,7 @@
 #include <stdio.h> 
 #include "../../defns.h"
 #include "binaryString.h"
-#include "../common_functions/common.h"
+#include "common.h"
 
 byte_t get_Rn_multiply (byte_t thirdByte) {
 	return get_First_Nibble(thirdByte); 
