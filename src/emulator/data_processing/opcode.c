@@ -19,7 +19,7 @@
 
 
 byte_t immediate_operand (byte_t firstByte) {
-    return firstByte & 1;
+    return (firstbyte & 2) >> 1;
 }
 
 byte_t get_OpCode (byte_t firstByte, byte_t secondByte) {
