@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "cond.h"
+#include "emulator/cond.h"
 
 #define PC 15
 #define CPSR 16
