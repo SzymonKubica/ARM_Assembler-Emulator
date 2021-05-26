@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "cond.h"
+#include "defns.h"
 
 #define PC 15
 #define CPSR 16
@@ -9,14 +10,14 @@
 
 
 // parse file into fileArray and update num words
-void parse_file (unsigned char *fileArray, const char *arg, int *words) {
+void parse_file (byte_t *fileArray, const char *arg, int *words) {
 	
 	FILE *file;
 	file = fopen(arg,"rb");
 
 	if(file) {
 			
-		unsigned char c = fgetc(file);
+		byte_t c = fgetc(file);
 
 		for (int i = 0; !feof(file); i++) {
 			// printf("%x ", c);
@@ -34,7 +35,7 @@ void parse_file (unsigned char *fileArray, const char *arg, int *words) {
 
 int main(int argc, char **argv) {
 	
-	unsigned char *memory = malloc(memorySize); // holds entire file
+	byte_t *memory = malloc(memorySize); // holds entire file
 	unsigned long int registers[17];
 
 	for (int i = 0; i < 17; i++){
