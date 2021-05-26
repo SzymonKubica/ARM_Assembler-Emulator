@@ -3,7 +3,7 @@ CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -
 LDLIBS = -L../../lib -lbinaryString
 LIB    = libsingle_data_processing.a
 LIBOBJ = single_data_processing.o
-BUILD  = libs $(LIB)
+BUILD  = $(LIB)
 
 all: $(BUILD)
 
@@ -12,7 +12,4 @@ clean:
 
 $(LIB): $(LIBOBJ)
 	ar rcs $(LIB) $(LIBOBJ)
-
-libs: 
-	cd ../../lib; make
 

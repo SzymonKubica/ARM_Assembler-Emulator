@@ -1,6 +1,6 @@
 CC      = gcc
-CFLAGS  = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -Iemulator/data_processing -Iemulator/multiply -Iemulator/branch -Iemulator/single_data_processing -Ilib -Iemulator 
-LDLIBS  = -Lemulator/data_processing -lopcode -Lemulator/multiply -lmultiply -Lemulator/branch -lbranch -Lemulator/single_data_processing -lsingle_data_processing -Lemulator -lcond
+CFLAGS  = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -Iemulator/data_processing -Iemulator/multiply -Iemulator/branch -Iemulator/single_data_processing -Ilib -Iemulator/cond 
+LDLIBS  = -Lemulator/data_processing -lopcode -Lemulator/multiply -lmultiply -Lemulator/branch -lbranch -Lemulator/single_data_processing -lsingle_data_processing -Lemulator/cond -lcond
 BUILD   = libs assemble emulate
 
 .SUFFIXES: .c .o
