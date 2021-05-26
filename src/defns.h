@@ -1,0 +1,12 @@
+#ifndef DEFN
+#define DEFN
+
+/*
+ * This file contains all of the definitions used accross the project.
+ */
+
+typedef unsigned char byte_t;
+
+#endif
+
+

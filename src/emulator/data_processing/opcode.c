@@ -1,37 +1,37 @@
 #include <stdio.h>
+#include "../../defns.h"
+#include "binaryString.h"
 
-#define and 0b0000
-#define eor 0b0001
-#define sub 0b0010
-#define rsb 0b0011
-#define add 0b0100
-#define tst 0b1000
-#define teq 0b1001
-#define cmp 0b1100
-#define mov 0b1101
+#define and 0 // 0b0000
+#define eor 1 // 0b0001
+#define sub 2 // 0b0010
+#define rsb 3 // 0b0011
+#define add 4 // 0b0100
+#define tst 8 // 0b1000
+#define teq 9 // 0b1001
+#define cmp 12// 0b1100
+#define mov 13// 0b1101
 
-#define lsl 0b00
-#define lsr 0b01
-#define asr 0b10
-#define ror 0b11
+#define lsl 0 //0b00
+#define lsr 1 //0b01
+#define asr 2 //0b10
+#define ror 3 //0b11
 
-typedef unsigned char Byte;
-typedef unsigned long int Word;
 
-Byte immediate_operand (Byte firstByte) {
-	return firstByte & 1;
+byte_t immediate_operand (byte_t firstByte) {
+    return firstByte & 1;
 }
 
-Byte get_OpCode (Byte firstByte, Byte secondByte) {
-	return ((firstByte & 1) + secondByte) >> 4;
+byte_t get_OpCode (byte_t firstByte, byte_t secondByte) {
+    return ((firstByte & 1) + secondByte) >> 4;
 }
 
-Byte get_Rn (Byte secondByte) {
-	return secondByte & 0b1111;
+byte_t get_Rn (byte_t secondByte) {
+    return secondByte & readBinary("1111");
 }
 
-Byte get_Rd (Byte thirdByte) {
-	return thirdByte >> 4;
+byte_t get_Rd (byte_t thirdByte) {
+    return thirdByte >> 4;
 }
 
 // shifts bits according to shiftType
@@ -51,8 +51,9 @@ Word shifter (Byte shiftType, Byte shiftAmount, Word word) {
 } 
 
 // short: 2 bytes
-unsigned short get_Operand2 (Byte thirdByte, Byte fourthByte, 
-		Byte immediate_operand, Word * registers) {
+unsigned short get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
+byte_t immediate_operand) {
+
 
 	// Operand2 immediate value
 	if (immediate_operand) {

@@ -1,17 +1,24 @@
 CC      = gcc
-CFLAGS  = -Wall -g -D_POSIX_SOURCE -D_BSD_SOURCE -std=c99 -Werror -pedantic
+CFLAGS  = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -Iemulator/data_processing -Iemulator/multiply -Iemulator/branch -Iemulator/single_data_processing -Ilib -Iemulator 
+LDLIBS  = -Lemulator/data_processing -lopcode -Lemulator/multiply -lmultiply -Lemulator/branch -lbranch -Lemulator/single_data_processing -lsingle_data_processing -Lemulator -lcond
+BUILD   = libs assemble emulate
 
 .SUFFIXES: .c .o
 
 .PHONY: all clean
 
-all: assemble emulate
+all: $(BUILD)  
+
+clean:
+	/bin/rm -f $(BUILD) *.o core
+	cd emulator; make clean
+	cd lib; make clean
+
+libs:
+	cd emulator; make
+	cd lib; make
 
 assemble: assemble.o
 
 emulate: emulate.o
 
-clean:
-	rm -f $(wildcard *.o)
-	rm -f assemble
-	rm -f emulate
