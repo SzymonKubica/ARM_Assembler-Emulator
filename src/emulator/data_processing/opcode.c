@@ -70,16 +70,17 @@ byte_t immediate_operand, word_t * registers) {
 		byte_t shift = (thirdByte & readBinary("1111") << 4) | (fourthByte >> 4);
 		byte_t shiftType = shift & readBinary("110") >> 1;
 
+		//TODO: Issue: Compilation fails because registers is out of scope in the function.
 		word_t wordToShift = registers[Rm];
 
-		if (!(shift & 1)) { // Bit 4 is 0: shift by a constant.
-			byte_t integer = shift >> 3;
-			return shifter (shiftType, integer, wordToShift); 
-		} else {// Bit 4 is 1: shift by a specified register.
-			// This part is optional?
-			byte_t shiftRegister = shift >> 4;
-			return shifter (shiftType, registers[shiftRegister], wordToShift);
-		}
+			if (!(shift & 1)) { // Bit 4 is 0: shift by a constant.
+				byte_t integer = shift >> 3;
+				return shifter (shiftType, integer, wordToShift); 
+			} else {// Bit 4 is 1: shift by a specified register.
+				// This part is optional?
+				byte_t shiftRegister = shift >> 4;
+				return shifter (shiftType, registers[shiftRegister], wordToShift);
+			}
 	}
 }
 
@@ -89,7 +90,7 @@ byte_t get_Set_Condition_Code (byte_t thirdByte) {
 
 // TODO:
 /*
-void execute_operation (byte_t opCode, unsigned long int *registers, 
+void execute_operation (byte_t opCode, Word *registers, 
 		byte_t Rn, byte_t Rd, unsigned short operand2) {
 
 	// unsigned long int * destination = &registers[Rd];
@@ -118,10 +119,10 @@ void execute_operation (byte_t opCode, unsigned long int *registers,
 
 int main (void) {
 
-	Word registers[17];
+	word_t registers[17];
 	memset (registers, 0, 1);
 
-	byte_t tb = 0b10001000, fob = 0b10000000;
+	byte_t tb = readBinary("10001000"), fob = readBinary("10000000");
 	printf ("%d \n", get_Rd(tb));
 	printf ("%d \n", get_Operand2(tb, fob));
 
