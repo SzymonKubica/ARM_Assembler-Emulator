@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "../../defns.h"
-#include "../../lib/binaryString.h"
+#include "binaryString.h"
 
 #define and 0 // 0b0000
 #define eor 1 // 0b0001
