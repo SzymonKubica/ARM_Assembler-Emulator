@@ -34,71 +34,96 @@ byte_t get_Rd (byte_t thirdByte) {
     return thirdByte >> 4;
 }
 
+// shifts bits according to shiftType
+Word shifter (Byte shiftType, Byte shiftAmount, Word word) {
+	switch (shiftType){
+		case 0: // logical left
+			return word << shiftAmount;
+		case 1: // logical right
+			return word >> shiftAmount;
+		case 2: // arithmetic right
+			return word /  (1 << shiftAmount);
+		case 3: // rotate right
+			return  (word >> shiftAmount) | (word << (32 - shiftAmount));
+		default: // should never be reached
+			return 0;
+	}
+} 
+
 // short: 2 bytes
 unsigned short get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
 byte_t immediate_operand) {
 
 
-    // Operand2 immediate value
+	// Operand2 immediate value
 	if (immediate_operand) {
-        byte_t rotation = thirdByte & readBinary("1111"); 
-        return (fourthByte >> rotation) | (fourthByte << (32 - rotation));
-    }
+		Byte rotation = (thirdByte & 0b1111) << 1; 
+		return shifter (3, rotation, fourthByte);
+	}
 
 	// Operand2 register
-	// Commenting everything out so that compiler doesn't complain.
-	/*
-	else {
+	else {		
+		Byte Rm = fourthByte & 0b1111;
+
 		// The shift is specified by the second half of the thirdByte and the 
 		// first half of the fourthByte.
-		byte_t shift = (thirdByte & readBinary("1111") << 4) | (fourthByte >> 4);
-        byte_t shiftType = shift & readBinary("110");
-		if (!(shift & 1)) { // Bit 4 is 0: shift by a constant.
-            //unsigned int shiftValue = shift >> 3;
-            return shift; //TODO: Rm needs to be modified by a specific shift and returned.
-		} else {// Bit 4 is 1: shift by a specified register.
-            // This part is optional.
-            byte_t shiftRegister = shift >> 4;
-		}
-  }
-	*/
-	unsigned short dummy = 0;
-	return dummy;
-	// TODO: return in the second case.
+
+		Byte shift = (thirdByte & 0b1111 << 4) | (fourthByte >> 4);
+		Byte shiftType = shift & 0b110 >> 1;
+
+		Word wordToShift = registers[Rm];
+
+			if (!(shift & 0b1)) { // Bit 4 is 0: shift by a constant.
+				Byte integer = shift >> 3;
+				return shifter (shiftType, integer, wordToShift); 
+			} else {// Bit 4 is 1: shift by a specified register.
+				// This part is optional?
+				Byte shiftRegister = shift >> 4;
+				return shifter (shiftType, registers[shiftRegister], wordToShift);
+			}
+	}
 }
 
-void execute_operation (byte_t opCode, unsigned long int *registers, 
-byte_t Rn, byte_t Rd, unsigned short operand2) {
-    
-    // unsigned long int * destination = &registers[Rd];
 
 
-    // TODO: implement CPSR manipulation
-    switch (opCode) {
-        case and:
-            registers[Rd] = registers[Rn] & operand2;
-            break;
-        case eor:
-            registers[Rd] = registers[Rn] ^ operand2;
-            break;
-        case sub:
-            registers[Rd] = registers[Rn] - operand2;
-            break;
-        case add:
-            registers[Rd] = operand2 - registers[Rn];
-            break; 
-        
-    }
+// TODO:
+/*
+void execute_operation (Byte opCode, unsigned long int *registers, 
+		Byte Rn, Byte Rd, unsigned short operand2) {
+
+	// unsigned long int * destination = &registers[Rd];
+
+
+	// TODO: implement CPSR manipulation
+	switch (opCode) {
+		case and:
+			registers[Rd] = registers[Rn] & operand2;
+			break;
+		case eor:
+			registers[Rd] = registers[Rn] ^ operand2;
+			break;
+		case sub:
+			registers[Rd] = registers[Rn] - operand2;
+			break;
+		case add:
+			registers[Rd] = operand2 - registers[Rn];
+			break; 
+
+	}
 
 }
+*/
 
+/*
 int main (void) {
-    byte_t tb = readBinary("10001000"), fob = readBinary("10000000");
-    printf ("%d \n", get_Rd(tb));
-    printf ("%d \n", get_Operand2(tb, fob, 0));
 
-    return 0;
+	Word registers[17];
+	memset (registers, 0, 1);
+
+	Byte tb = 0b10001000, fob = 0b10000000;
+	printf ("%d \n", get_Rd(tb));
+	printf ("%d \n", get_Operand2(tb, fob));
+
+	return 0;
 }
-
-
-
+*/
