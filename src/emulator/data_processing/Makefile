@@ -3,7 +3,7 @@ CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -
 LDLIBS = -L../../lib -lbinaryString
 LIB    = libopcode.a
 LIBOBJ = opcode.o
-BUILD  = opcode $(LIB)
+BUILD  = $(LIB)
 
 all: $(BUILD)
 
@@ -13,6 +13,5 @@ clean:
 $(LIB): $(LIBOBJ)
 	ar rcs $(LIB) $(LIBOBJ)
 
-opcode: opcode.o
 
 
