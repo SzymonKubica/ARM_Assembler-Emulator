@@ -2,6 +2,14 @@
 #include "binaryString.h"
 #include "common.h"
 
+byte_t get_Rn (byte_t secondByte) {
+	return get_Second_Nibble (secondByte);
+}
+
+byte_t get_Rd (byte_t thirdByte) {
+	return thirdByte >> 4;
+}
+
 byte_t immediate_operand (byte_t firstByte) {
 	return (firstByte & readBinary("00000010")) >> 1;
 }

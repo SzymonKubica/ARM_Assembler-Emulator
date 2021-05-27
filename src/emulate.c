@@ -34,6 +34,26 @@ void parse_file (byte_t *fileArray, const char *arg, int *words) {
 	}
 }
 
+enum instruction decode (byte_t * word) {
+	// code - bit 27 26
+	byte_t code = (word[0] >> 2) & 3;
+
+	switch (code) {
+		case 1 :
+			return single_data_transfer;
+		case 3: 
+			return branch;
+		default:
+			// data processing or multiply
+			if (((word[0] & 3) == 0) 
+					&& ((word[1] >> 6) == 0)
+				       	&& ((word[3] >> 4) == 9)) {
+				return multiply;
+			} else {
+				return data_processing;
+			}
+	}
+}
 
 
 int main(int argc, char **argv) {
