@@ -1,8 +1,8 @@
 CC     = gcc
 CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../../lib
 LDLIBS = -L../../lib -lbinaryString
-LIB    = libopcode.a
-LIBOBJ = opcode.o
+LIB    = libdata_processing.a
+LIBOBJ = data_processing.o 
 BUILD  = $(LIB)
 
 all: $(BUILD)

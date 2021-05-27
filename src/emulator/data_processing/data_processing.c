@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "../../defns.h"
 #include "binaryString.h"
+#include "data_processing.h"
 
 #define and 0 // 0b0000
 #define eor 1 // 0b0001
@@ -52,8 +53,8 @@ static word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word) {
 	}
 } 
 
-static unsigned short get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
-byte_t immediate_operand, word_t * registers) {
+static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
+byte_t immediate_operand, word_t *registers) {
 
 	// Operand2 immediate value
 	if (immediate_operand) {
@@ -71,16 +72,12 @@ byte_t immediate_operand, word_t * registers) {
 		byte_t shift = (thirdByte & readBinary("1111") << 4) | (fourthByte >> 4);
 		byte_t shiftType = shift & readBinary("110") >> 1;
 
-		//TODO: Issue: Compilation fails because registers is out of scope in the function.
 		word_t wordToShift = registers[Rm];
 
 		if (!(shift & 1)) { // Bit 4 is 0: shift by a constant.
 			byte_t integer = shift >> 3;
 			return shifter (shiftType, integer, wordToShift); 
 		} else {// Bit 4 is 1: shift by a specified register.
-			// This part is optional?
-			byte_t shiftRegister = shift >> 4;
-			return shifter (shiftType, registers[shiftRegister], wordToShift);
 		}
 	}
 }
@@ -89,7 +86,7 @@ static byte_t get_Set_Condition_Code (byte_t thirdByte) {
 	return (thirdByte >> 4) & 1;
 }
 
-static void set_CPSR (word_t result, word_t *cspr) {
+static void set_CPSR (word_t result, word_t *cspr, bit_t logical_op) {
 	// Set N-bit
 	*cpsr &= 0x7fffffff;
 	*cpsr |= (result >> 31) << 31;
@@ -99,7 +96,9 @@ static void set_CPSR (word_t result, word_t *cspr) {
 	} else {
 		*cpsr &= 0xbfffffff;
 	}
-	// TODO: Set C-bit
+	// Set C-bit
+	
+	
 }
 
 
@@ -110,15 +109,18 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 	byte_t Rd = get_Rd(firstByte[2]);
 	byte_t opCode = get_OpCode(firstByte[0], firstByte[1]);
 	word_t result = 0; 
+	bit_t logical_op = 0; 
 
 	switch (opCode) {
 		case and:
 			registers[Rd] = registers[Rn] & operand2;
-			result = registers[Rd]; 
+			result = registers[Rd];
+		        logical_op = 1;	
 			break;
 		case eor:
 			registers[Rd] = registers[Rn] ^ operand2;
 			result = registers[Rd];
+			logical_op = 1;
 			break;
 		case sub:
 			registers[Rd] = registers[Rn] - operand2;
@@ -134,9 +136,11 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 			break;
 		case tst:
 			result = registers[Rn] & operand2; 
+			logical_op = 1; 
 			break;
 		case teq: 
 			result = registers[Rn] ^ operand2; 
+			logical_op = 1;
 			break;
 		case cmp:
 			result = registers[Rn] - operand2; 
@@ -144,15 +148,17 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 		case orr:
 			registers[Rd] = registers[Rn] | operand2; 
 			result = registers[Rd];
+			logical_op = 1; 
 			break;
 		case mov:
 			registers[Rd] = operand2; 
-			result = registers[Rd]; 
+			result = registers[Rd];
+		        logical_op = 1; 	
 			break; 	
 	}
 
 	if (get_S(firstByte[1])) {
-		set_CPSR(result, &registers[16]); 
+		set_CPSR(result, &registers[16], logical_op); 
 	}
 }
 

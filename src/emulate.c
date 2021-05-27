@@ -8,6 +8,7 @@
 #define CPSR 16
 #define memorySize 65536
 
+enum instruction{data_processing, multiply, single_data_transfer, branch};
 
 // parse file into fileArray and update num words
 void parse_file (byte_t *fileArray, const char *arg, int *words) {
@@ -32,6 +33,8 @@ void parse_file (byte_t *fileArray, const char *arg, int *words) {
 		}
 	}
 }
+
+
 
 int main(int argc, char **argv) {
 	
@@ -77,6 +80,5 @@ int main(int argc, char **argv) {
 	}
 	
 	free(memory);
-
   	return EXIT_SUCCESS;
 }
