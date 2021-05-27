@@ -25,7 +25,7 @@ static byte_t get_immediate_operand (byte_t firstByte) {
 }
 
 static byte_t get_OpCode (byte_t firstByte, byte_t secondByte) {
-	return ((firstByte & 1) + secondByte) >> 4;
+	return ((firstByte & 1) << 3) | ((secondByte) >> 5);
 }
 
 static byte_t get_Rn (byte_t secondByte) {
@@ -190,15 +190,3 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 	}
 }
 
-//debugging
-int main (void) {
-
-	// word_t registers[17];
-	// memset (registers, 0, 1);
-
-	// byte_t tb = readBinary("10001000"), fob = readBinary("10000000");
-	// printf ("%d \n", get_Rd(tb));
-	// printf ("%d \n", get_Operand2(tb, fob));
-
-	// return 0;
-}

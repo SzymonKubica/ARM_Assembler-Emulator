@@ -7,7 +7,7 @@ byte_t get_Rn (byte_t secondByte) {
 }
 
 byte_t get_Rd (byte_t thirdByte) {
-	return thirdByte >> 4;
+	return get_First_Nibble(thirdByte);
 }
 
 byte_t immediate_operand (byte_t firstByte) {
@@ -31,7 +31,7 @@ byte_t get_shifted_register(byte_t thirdByte) {
 }
 
 // short: 2 bytes (16b), we need 12 bits for the offset or register.
-unsigned short get_offset(byte_t thirdByte, byte_t fourthByte, 
+static unsigned short get_offset(byte_t thirdByte, byte_t fourthByte, 
 		byte_t immediate_offset, word_t * registers) {
 
 	if (immediate_offset) {
@@ -188,8 +188,8 @@ static byte_t subtract_offset(byte_t Rn, byte_t offset) {
 	return Rn - offset;
 }
 
-int main(void) {
+// int main(void) {
 
-}
+// }
 
 

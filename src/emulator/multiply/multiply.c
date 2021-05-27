@@ -48,7 +48,3 @@ void execute_multiply (byte_t *firstByte, word_t *registers) {
 		set_CPSR(registers[get_Rd_multiply(firstByte[1])], &registers[16]);
 	}
 }
-
-int main(void) {
-	return 0; 
-}

@@ -4,6 +4,12 @@
 #include "cond.h"
 #include "defns.h"
 
+
+#include "data_processing.h"
+#include "multiply.h"
+#include "single_data_processing.h"
+#include "branch.h"
+
 #define PC 15
 #define CPSR 16
 #define memorySize 65536
@@ -55,6 +61,23 @@ enum instruction decode (byte_t * word) {
 	}
 }
 
+void execute (byte_t * word, word_t * registers, enum instruction code, byte_t * memory) {
+	switch (code) {
+		case data_processing:
+			execute_data_processing (word, registers);
+			break;
+		case multiply:
+			execute_multiply (word, registers);
+			break;
+		case single_data_transfer:
+			execute_single_data_transfer (word, registers, memory);
+			break;
+		case branch:
+			execute_branch (word, registers);
+			break;
+	}
+
+}
 
 int main(int argc, char **argv) {
 	
@@ -74,18 +97,58 @@ int main(int argc, char **argv) {
 	for (int i =0; i < num_words * 4; i++) {
 		printf("%x ", memory[i]);
 	}
-
 	printf("\n");
 	*/
 
+	// 3 stage pipeline
+	byte_t *fetched_Instruction;
+	byte_t *decoded_Instruction;
+	byte_t *execute_Instruction;
+
+	// initialisation:
+	fetched_Instruction = memory;
+	registers[PC] += 4;
+
+	decoded_Instruction = fetched_Instruction;
+	int n = registers[PC];
+	fetched_Instruction = memory + n;
+
+	registers[PC] += 4;
+
+	// main loop
+	while (decoded_Instruction[0] 
+		|| decoded_Instruction[1]
+		|| decoded_Instruction[2]
+		|| decoded_Instruction[3]) {
+		
+		execute_Instruction = decoded_Instruction;
+		
+		byte_t reversed_Instruction[4];
+
+		for (int i = 0; i< 4; i++) {
+			reversed_Instruction[i] = execute_Instruction[3-i];
+		}
+		
+		if (checkCond(reversed_Instruction[1], registers[CPSR])) {
+
+			execute(reversed_Instruction, registers, decode(reversed_Instruction), memory);
+		}
+
+		decoded_Instruction = fetched_Instruction;
+
+		int n = registers[PC];
+		fetched_Instruction = memory + n;
+
+		registers[PC] += 4;
+	}
 	// print output
 	// print program state
 	for (int i = 0; i < 13; i++) {
-		printf("$%d : %ld (0x%08lx)\n", i, registers[i],registers[i]);
+		printf("$%d : %d (0x%08x)\n", i, registers[i],registers[i]);
 	}
 
-	printf("PC : %ld (0x%08lx)\n", registers[PC], registers[PC]);
-	printf("CPSR : %ld (0x%08lx)\n", registers[CPSR], registers[CPSR]);
+	printf("PC : %d (0x%08x)\n", registers[PC], registers[PC]);
+	printf("CPSR : %d (0x%08x)\n", registers[CPSR], registers[CPSR]);
 
 	printf("Non-zero memory:\n");
 	// printf("%d\n", num_words);

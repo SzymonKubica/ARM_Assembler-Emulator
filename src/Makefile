@@ -21,4 +21,5 @@ libs:
 assemble: assemble.o
 
 emulate: emulate.o
+	gcc -g emulate.o lib/*.o emulator/*/*.o -o emulate
 
