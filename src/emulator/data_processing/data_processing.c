@@ -2,6 +2,7 @@
 #include "../../defns.h"
 #include "binaryString.h"
 #include "data_processing.h"
+#include "common.h"
 
 #define and 0 // 0b0000
 #define eor 1 // 0b0001
@@ -10,7 +11,8 @@
 #define add 4 // 0b0100
 #define tst 8 // 0b1000
 #define teq 9 // 0b1001
-#define cmp 12// 0b1100
+#define cmp 10// 0b1010
+#define orr 12// 0b1100
 #define mov 13// 0b1101
 
 #define lsl 0 //0b00
@@ -19,19 +21,19 @@
 #define ror 3 //0b11
 
 static byte_t get_immediate_operand (byte_t firstByte) {
-    return (firstbyte & 2) >> 1;
+	return (firstByte & 2) >> 1;
 }
 
 static byte_t get_OpCode (byte_t firstByte, byte_t secondByte) {
-    return ((firstByte & 1) + secondByte) >> 4;
+	return ((firstByte & 1) + secondByte) >> 4;
 }
 
 static byte_t get_Rn (byte_t secondByte) {
-    return secondByte & readBinary("1111");
+	return secondByte & readBinary("1111");
 }
 
 static byte_t get_Rd (byte_t thirdByte) {
-    return thirdByte >> 4;
+	return thirdByte >> 4;
 }
 
 static byte_t get_S (byte_t secondByte) {
@@ -54,7 +56,7 @@ static word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word) {
 } 
 
 static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
-byte_t immediate_operand, word_t *registers) {
+		byte_t immediate_operand, word_t *registers) {
 
 	// Operand2 immediate value
 	if (immediate_operand) {
@@ -77,16 +79,20 @@ byte_t immediate_operand, word_t *registers) {
 		if (!(shift & 1)) { // Bit 4 is 0: shift by a constant.
 			byte_t integer = shift >> 3;
 			return shifter (shiftType, integer, wordToShift); 
-		} else {// Bit 4 is 1: shift by a specified register.
+		} else {
+			// Bit 4 is 1: shift by a specified register.
+			//(optional)
+			byte_t Rs = get_First_Nibble (thirdByte);
+			return shifter (shiftType, registers[Rs], wordToShift);
 		}
 	}
 }
 
-static byte_t get_Set_Condition_Code (byte_t thirdByte) {
-	return (thirdByte >> 4) & 1;
-}
+// static byte_t get_Set_Condition_Code (byte_t thirdByte) {
+// 	return (thirdByte >> 4) & 1;
+// }
 
-static void set_CPSR (word_t result, word_t *cspr, bit_t logical_op) {
+static void set_CPSR (word_t result, word_t *cpsr, bit_t logical_op) {
 	// Set N-bit
 	*cpsr &= 0x7fffffff;
 	*cpsr |= (result >> 31) << 31;
@@ -97,8 +103,8 @@ static void set_CPSR (word_t result, word_t *cspr, bit_t logical_op) {
 		*cpsr &= 0xbfffffff;
 	}
 	// Set C-bit
-	
-	
+
+
 }
 
 
@@ -115,7 +121,7 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 		case and:
 			registers[Rd] = registers[Rn] & operand2;
 			result = registers[Rd];
-		        logical_op = 1;	
+			logical_op = 1;	
 			break;
 		case eor:
 			registers[Rd] = registers[Rn] ^ operand2;
@@ -153,7 +159,7 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 		case mov:
 			registers[Rd] = operand2; 
 			result = registers[Rd];
-		        logical_op = 1; 	
+			logical_op = 1; 	
 			break; 	
 	}
 
@@ -162,14 +168,15 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 	}
 }
 
+//debugging
 int main (void) {
 
-	word_t registers[17];
-	memset (registers, 0, 1);
+	// word_t registers[17];
+	// memset (registers, 0, 1);
 
-	byte_t tb = readBinary("10001000"), fob = readBinary("10000000");
-	printf ("%d \n", get_Rd(tb));
-	printf ("%d \n", get_Operand2(tb, fob));
+	// byte_t tb = readBinary("10001000"), fob = readBinary("10000000");
+	// printf ("%d \n", get_Rd(tb));
+	// printf ("%d \n", get_Operand2(tb, fob));
 
-	return 0;
+	// return 0;
 }

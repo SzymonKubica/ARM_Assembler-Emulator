@@ -1,6 +1,6 @@
 CC     = gcc
-CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../../lib
-LDLIBS = -L../../lib -lbinaryString
+CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../../lib -I../common_functions
+LDLIBS = -L../../lib -lbinaryString -L../common_functions
 LIB    = libdata_processing.a
 LIBOBJ = data_processing.o 
 BUILD  = $(LIB)
