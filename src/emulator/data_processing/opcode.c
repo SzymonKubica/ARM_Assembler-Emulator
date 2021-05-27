@@ -104,7 +104,7 @@ static void set_CPSR (word_t result, word_t *cspr) {
 
 
 void execute_data_processing (byte_t *firstByte, word_t *registers) {
-	unsigned short operand2 
+	word_t operand2 
 		= get_Operand2(firstByte[2], firstByte[3], get_immediate_operand(firstByte[0]), registers); 
 	byte_t Rn = get_Rn(firstByte[1]);
 	byte_t Rd = get_Rd(firstByte[2]);
