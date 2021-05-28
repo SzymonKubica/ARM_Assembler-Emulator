@@ -14,8 +14,4 @@ void execute_branch (byte_t *firstByte, word_t *registers) {
 	// TO DO: Branch Execution Implementation
 }
 
-/*
-int main(void) {
-	return 0; 
-}
-*/
+

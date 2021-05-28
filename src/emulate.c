@@ -7,7 +7,7 @@
 
 #include "data_processing.h"
 #include "multiply.h"
-#include "single_data_processing.h"
+#include "single_data_transfer.h"
 #include "branch.h"
 
 #define PC 15

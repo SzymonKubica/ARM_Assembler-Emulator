@@ -1,6 +1,8 @@
 #ifndef DEFN
 #define DEFN
 
+#include<stdint.h>
+
 /*
  * Type Definitions for types used across project
  */
