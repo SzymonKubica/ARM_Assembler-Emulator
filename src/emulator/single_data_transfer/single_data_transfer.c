@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include "../../defns.h"
 #include "binaryString.h"
 #include "common.h"
@@ -5,7 +7,11 @@
 /*
  * Single data transfer module: implementation.
  */ 
-
+// Execute function:
+void execute_single_data_transfer (
+		byte_t *firstByte, 
+		word_t *registers, 
+		byte_t *memory);
 
 // Helper functions for execute_single_data_transfer.
 // Declared in descending level of abstraction.
@@ -65,7 +71,7 @@ void execute_single_data_transfer (
 static void execute_pre_indexing(
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t*memory) 
+		byte_t *memory) 
 {
 	byte_t Rn = get_Rn(firstByte[1]);
 
@@ -211,7 +217,26 @@ unsigned short get_offset(
 }
 
 int main(void) {
+ // Hard-coding the instruction:
+  byte_t *instruction = malloc(4);
+  // str r2, [r3] from page 17 in the spec.
+  instruction[0] = readBinary("11100101");
+  instruction[1] = readBinary("10000011");
+  instruction[2] = readBinary("00100000");
+  instruction[3] = readBinary("00000000");
+  byte_t *memory = malloc(65536);
+	word_t *registers = malloc(17 * sizeof(word_t));
+	for (int i = 0; i < 17; i++) {
+	registers[i] = 0;
+	}
 
+	// Hard-coding some data in the register r2:
+	registers[readBinary("0010" /* register r2 */)] = readBinaryWord(
+	    "00000000 00000000 00000000 00001000" // data stored: 16;
+	);
+
+	execute_single_data_transfer(instruction, registers, memory);
+	printf("%d", memory[registers[3]]);
+
+	return 0;
 }
-
-
