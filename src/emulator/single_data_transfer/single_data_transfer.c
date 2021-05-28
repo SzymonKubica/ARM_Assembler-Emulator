@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include "../../defns.h"
 #include "binaryString.h"
 #include "common.h"
@@ -5,7 +7,11 @@
 /*
  * Single data transfer module: implementation.
  */ 
-
+// Execute function:
+void execute_single_data_transfer (
+		byte_t *firstByte, 
+		word_t *registers, 
+		byte_t *memory);
 
 // Helper functions for execute_single_data_transfer.
 // Declared in descending level of abstraction.
@@ -65,7 +71,7 @@ void execute_single_data_transfer (
 static void execute_pre_indexing(
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t*memory) 
+		byte_t *memory) 
 {
 	byte_t Rn = get_Rn(firstByte[1]);
 
@@ -100,7 +106,7 @@ static void load(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 }
 
 static void store(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
-	memory[registers[Rd]] = registers[Rn];
+	memory[registers[Rn]] = registers[Rd];
 }
 
 // Used in case of pre-indexing. Offset is applied and new register address is returned.
@@ -209,9 +215,4 @@ unsigned short get_offset(
 		return ((thirdByte & readBinary("1111")) << 8) | fourthByte;
 	}
 }
-
-int main(void) {
-
-}
-
 

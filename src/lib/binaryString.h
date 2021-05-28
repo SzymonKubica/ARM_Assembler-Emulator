@@ -5,4 +5,4 @@
  */
 
 extern byte_t readBinary(char *str);
-extern int length(char *str);
+extern word_t readBinaryWord(char *str);
