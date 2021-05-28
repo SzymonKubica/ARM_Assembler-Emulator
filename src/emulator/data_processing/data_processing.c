@@ -75,8 +75,8 @@ static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte,
 		// The shift is specified by the second half of the thirdByte and the 
 		// first half of the fourthByte.
 
-		byte_t shift = (thirdByte & readBinary("1111") << 4) | (fourthByte >> 4);
-		byte_t shiftType = shift & readBinary("110") >> 1;
+		byte_t shift = ((thirdByte & readBinary("1111")) << 4) | (fourthByte >> 4);
+		byte_t shiftType = (shift & readBinary("110")) >> 1;
 
 		word_t wordToShift = registers[Rm];
 
