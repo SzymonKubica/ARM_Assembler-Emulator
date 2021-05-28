@@ -37,6 +37,7 @@ void parse_file (byte_t *fileArray, const char *arg, int *words) {
 			c = fgetc(file);
 		
 		}
+		fclose(file); 
 	}
 }
 
@@ -61,7 +62,7 @@ enum instruction decode (byte_t * word) {
 	}
 }
 
-void execute (byte_t * word, word_t * registers, enum instruction code, byte_t * memory) {
+void execute (byte_t *word, word_t *registers, enum instruction code, byte_t *memory) {
 	switch (code) {
 		case data_processing:
 			execute_data_processing (word, registers);
@@ -129,7 +130,7 @@ int main(int argc, char **argv) {
 			reversed_Instruction[i] = execute_Instruction[3-i];
 		}
 		
-		if (checkCond(reversed_Instruction[1], registers[CPSR])) {
+		if (checkCond(reversed_Instruction[0], registers[CPSR])) {
 
 			execute(reversed_Instruction, registers, decode(reversed_Instruction), memory);
 		}
@@ -141,19 +142,18 @@ int main(int argc, char **argv) {
 
 		registers[PC] += 4;
 	}
-	// print output
+	// Print Output  
 	// print program state
+	printf("Registers:\n"); 
 	for (int i = 0; i < 13; i++) {
-		printf("$%d : %d (0x%08x)\n", i, registers[i],registers[i]);
+		printf("$%-3d: %10d (0x%08x)\n", i, registers[i],registers[i]);
 	}
 
-	printf("PC : %d (0x%08x)\n", registers[PC], registers[PC]);
-	printf("CPSR : %d (0x%08x)\n", registers[CPSR], registers[CPSR]);
+	printf("PC  : %10d (0x%08x)\n", registers[PC], registers[PC]);
+	printf("CPSR: %10d (0x%08x)\n", registers[CPSR], registers[CPSR]);
 
 	printf("Non-zero memory:\n");
-	// printf("%d\n", num_words);
 	
-	// print addresses: words 
 	for (int i = 0; i < num_words; i++) {
 		printf("0x%08x: 0x", i * 4);
 		for (int n = 0; n < 4 ; n++) {
