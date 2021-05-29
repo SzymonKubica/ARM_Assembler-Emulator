@@ -64,7 +64,7 @@ void execute_single_data_transfer (
 		word_t *registers, 
 		byte_t *memory) 
 {
-	if (get_pre_post_indexing_bit(firstByte[1])) {
+	if (get_pre_post_indexing_bit(firstByte[0])) {
 
 		execute_pre_indexing(firstByte, registers, memory);
 
@@ -110,11 +110,25 @@ static void execute_post_indexing(
 }
 
 static void load(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
-	registers[Rn] = memory[registers[Rd]];
+	word_t loadWord = 0;
+	// load entire word at memory[Rn] in Big Endian
+	for (int i = 3; i >= 0; i--) {
+		loadWord = loadWord << 8;
+		loadWord |= memory[registers[Rn] + i];
+	}
+	registers[Rd] = loadWord;
 }
 
 static void store(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
-	memory[registers[Rd]] = registers[Rn];
+	word_t storeWord = registers[Rn];
+	// store word to little Endian
+	for (int i = 0; i < 4; i++) {
+		memory[registers[Rd] + i] = storeWord && 0xff;
+		storeWord >>= 8;
+	}
+	// registers[Rd] = loadWord;
+
+	// memory[registers[Rd]] = registers[Rn];
 }
 
 // Used in case of pre-indexing. Offset is applied and new register address is returned.

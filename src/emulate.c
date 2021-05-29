@@ -148,6 +148,10 @@ int main(int argc, char **argv) {
 	printf("Non-zero memory:\n");
 	
 	for (int i = 0; i < num_words; i++) {
+		if (!(memory[i*4] || memory[i*4 + 1] || memory[i*4 + 2] || memory[i*4 + 3])) {
+			continue;
+		}
+
 		printf("0x%08x: 0x", i * 4);
 		for (int n = 0; n < 4 ; n++) {
 			printf("%02x", memory[i * 4 + n]);

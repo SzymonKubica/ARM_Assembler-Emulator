@@ -99,7 +99,7 @@ static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte,
 static void set_CPSR (word_t result, word_t *cpsr, bit_t logical_op, bit_t carry) {
 	// Set N-bit
 	*cpsr &= 0x7fffffff;
-	*cpsr |= (result >> 31) << 31;
+	*cpsr |= ((result >> 30) & 1) << 31;
 	// Set Z-bit -- DOUBLE CHECK if-and-only-if on page VI of spec
 	if(!result) {
 		*cpsr |= 0x40000000;
@@ -109,7 +109,7 @@ static void set_CPSR (word_t result, word_t *cpsr, bit_t logical_op, bit_t carry
 
 	// Set C-bit to 0
 	*cpsr &= 0xdfffffff;
-	*cpsr |= (carry << 28);
+	*cpsr |= (carry << 29);
 
 }
 
@@ -144,13 +144,13 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 			registers[Rd] = registers[Rn] - operand2;
 			result = registers[Rd]; 
 			//logical_op = -1;
-			carry = (long int) result < 0 ? 0 : 1;
+			carry = operand2 > registers[Rn] ? 0 : 1;
 			break;
 		case rsb:
 			registers[Rd] = operand2 - registers[Rn];
 			result = registers[Rd];
 		       	//logical_op = -1;
-			carry = (long int) result < 0 ? 0 : 1;
+			carry = operand2 > registers[Rn] ? 0 : 1;
 			break;
 		case add:
 			registers[Rd] = registers[Rn] + operand2;
@@ -168,10 +168,10 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 			logical_op = 1;
 			break;
 		case cmp:
-			// if borrow carry = 0
+			// if borrow carry = 1
 			result = registers[Rn] - operand2; 
 			//logical_op = -1;
-			carry = (long int) result < 0 ? 0 : 1;
+			carry = operand2 > registers[Rn] ? 0 : 1;
 			break;
 		case orr:
 			registers[Rd] = registers[Rn] | operand2; 
