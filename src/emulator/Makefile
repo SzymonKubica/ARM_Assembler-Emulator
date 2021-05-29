@@ -12,12 +12,12 @@ clean:
 	
 libs: 
 	cd ../lib; make
+	cd common_functions; make
 	cd cond; make
 	cd branch; make
 	cd single_data_transfer; make
 	cd multiply; make
 	cd data_processing; make
-	cd common_functions; make
 
 
 

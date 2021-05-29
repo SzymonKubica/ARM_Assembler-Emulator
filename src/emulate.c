@@ -4,10 +4,17 @@
 #include "cond.h"
 #include "defns.h"
 
+
+#include "data_processing.h"
+#include "multiply.h"
+#include "single_data_transfer.h"
+#include "branch.h"
+
 #define PC 15
 #define CPSR 16
 #define memorySize 65536
 
+enum instruction{data_processing, multiply, single_data_transfer, branch};
 
 // parse file into fileArray and update num words
 void parse_file (byte_t *fileArray, const char *arg, int *words) {
@@ -30,7 +37,47 @@ void parse_file (byte_t *fileArray, const char *arg, int *words) {
 			c = fgetc(file);
 		
 		}
+		fclose(file); 
 	}
+}
+
+enum instruction decode (byte_t * word) {
+	// code - bit 27 26
+	byte_t code = (word[0] >> 2) & 3;
+
+	switch (code) {
+		case 1 :
+			return single_data_transfer;
+		case 3: 
+			return branch;
+		default:
+			// data processing or multiply
+			if (((word[0] & 3) == 0) 
+					&& ((word[1] >> 6) == 0)
+				       	&& ((word[3] >> 4) == 9)) {
+				return multiply;
+			} else {
+				return data_processing;
+			}
+	}
+}
+
+void execute (byte_t *word, word_t *registers, enum instruction code, byte_t *memory) {
+	switch (code) {
+		case data_processing:
+			execute_data_processing (word, registers);
+			break;
+		case multiply:
+			execute_multiply (word, registers);
+			break;
+		case single_data_transfer:
+			execute_single_data_transfer (word, registers, memory);
+			break;
+		case branch:
+			execute_branch (word, registers);
+			break;
+	}
+
 }
 
 int main(int argc, char **argv) {
@@ -51,23 +98,62 @@ int main(int argc, char **argv) {
 	for (int i =0; i < num_words * 4; i++) {
 		printf("%x ", memory[i]);
 	}
-
 	printf("\n");
 	*/
 
-	// print output
+	// 3 stage pipeline
+	byte_t *fetched_Instruction;
+	byte_t *decoded_Instruction;
+	byte_t *execute_Instruction;
+
+	// initialisation:
+	fetched_Instruction = memory;
+	registers[PC] += 4;
+
+	decoded_Instruction = fetched_Instruction;
+	int n = registers[PC];
+	fetched_Instruction = memory + n;
+
+	registers[PC] += 4;
+
+	// main loop
+	while (decoded_Instruction[0] 
+		|| decoded_Instruction[1]
+		|| decoded_Instruction[2]
+		|| decoded_Instruction[3]) {
+		
+		execute_Instruction = decoded_Instruction;
+		
+		byte_t reversed_Instruction[4];
+
+		for (int i = 0; i< 4; i++) {
+			reversed_Instruction[i] = execute_Instruction[3-i];
+		}
+		
+		if (checkCond(reversed_Instruction[0], registers[CPSR])) {
+
+			execute(reversed_Instruction, registers, decode(reversed_Instruction), memory);
+		}
+
+		decoded_Instruction = fetched_Instruction;
+
+		int n = registers[PC];
+		fetched_Instruction = memory + n;
+
+		registers[PC] += 4;
+	}
+	// Print Output  
 	// print program state
+	printf("Registers:\n"); 
 	for (int i = 0; i < 13; i++) {
-		printf("$%d : %ld (0x%08lx)\n", i, registers[i],registers[i]);
+		printf("$%-3d: %10d (0x%08x)\n", i, registers[i],registers[i]);
 	}
 
-	printf("PC : %ld (0x%08lx)\n", registers[PC], registers[PC]);
-	printf("CPSR : %ld (0x%08lx)\n", registers[CPSR], registers[CPSR]);
+	printf("PC  : %10d (0x%08x)\n", registers[PC], registers[PC]);
+	printf("CPSR: %10d (0x%08x)\n", registers[CPSR], registers[CPSR]);
 
 	printf("Non-zero memory:\n");
-	// printf("%d\n", num_words);
 	
-	// print addresses: words 
 	for (int i = 0; i < num_words; i++) {
 		printf("0x%08x: 0x", i * 4);
 		for (int n = 0; n < 4 ; n++) {
@@ -77,6 +163,5 @@ int main(int argc, char **argv) {
 	}
 	
 	free(memory);
-
   	return EXIT_SUCCESS;
 }

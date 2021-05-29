@@ -4,6 +4,14 @@
 #include "binaryString.h"
 #include "common.h"
 
+static byte_t get_Rn (byte_t secondByte) {
+	return secondByte & readBinary("1111");
+}
+
+static byte_t get_Rd (byte_t thirdByte) {
+	return thirdByte >> 4;
+}
+
 /*
  * Single data transfer module: implementation.
  */ 

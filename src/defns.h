@@ -6,6 +6,7 @@
 /*
  * Type Definitions for types used across project
  */
+#include <stdint.h>
 
 typedef unsigned char byte_t;
 typedef uint32_t word_t;
