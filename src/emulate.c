@@ -62,7 +62,8 @@ enum instruction decode (byte_t * word) {
 	}
 }
 
-void execute (byte_t *word, word_t *registers, enum instruction code, byte_t *memory) {
+void execute (byte_t *word, word_t *registers, byte_t *memory) {
+	enum instruction code = decode (word);
 	switch (code) {
 		case data_processing:
 			execute_data_processing (word, registers);
@@ -80,6 +81,12 @@ void execute (byte_t *word, word_t *registers, enum instruction code, byte_t *me
 
 }
 
+void reverse_instruction (byte_t *fetched_Instruction, byte_t *decoded_Instruction) {
+	for (int i = 0; i< 4; i++) {
+		decoded_Instruction[i] = fetched_Instruction[3-i];
+	}
+}
+
 int main(int argc, char **argv) {
 	
 	byte_t *memory = malloc(memorySize); // holds entire file
@@ -93,27 +100,19 @@ int main(int argc, char **argv) {
 
 	parse_file (memory, argv[1], &num_words);
 
-	/*
-	// print file as hex 
-	for (int i =0; i < num_words * 4; i++) {
-		printf("%x ", memory[i]);
-	}
-	printf("\n");
-	*/
 
 	// 3 stage pipeline
 	byte_t *fetched_Instruction;
-	byte_t *decoded_Instruction;
+	byte_t decoded_Instruction[4] = {0,0,0,0};
 	byte_t *execute_Instruction;
 
 	// initialisation:
 	fetched_Instruction = memory;
 	registers[PC] += 4;
 
-	decoded_Instruction = fetched_Instruction;
+	reverse_instruction (fetched_Instruction, decoded_Instruction);
 	int n = registers[PC];
 	fetched_Instruction = memory + n;
-
 	registers[PC] += 4;
 
 	// main loop
@@ -124,18 +123,12 @@ int main(int argc, char **argv) {
 		
 		execute_Instruction = decoded_Instruction;
 		
-		byte_t reversed_Instruction[4];
-
-		for (int i = 0; i< 4; i++) {
-			reversed_Instruction[i] = execute_Instruction[3-i];
-		}
-		
-		if (checkCond(reversed_Instruction[0], registers[CPSR])) {
-
-			execute(reversed_Instruction, registers, decode(reversed_Instruction), memory);
+		if (checkCond(decoded_Instruction[0], registers[CPSR])) {
+			execute(execute_Instruction, registers, memory);
 		}
 
-		decoded_Instruction = fetched_Instruction;
+		//decode instruction
+		reverse_instruction (fetched_Instruction, decoded_Instruction);
 
 		int n = registers[PC];
 		fetched_Instruction = memory + n;

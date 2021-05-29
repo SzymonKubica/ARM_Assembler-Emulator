@@ -86,7 +86,7 @@ static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte,
 		} else {
 			// Bit 4 is 1: shift by a specified register.
 			//(optional)
-			byte_t Rs = get_First_Nibble (thirdByte);
+			byte_t Rs = get_Second_Nibble (thirdByte);
 			return shifter (shiftType, registers[Rs], wordToShift, carry);
 		}
 	}
