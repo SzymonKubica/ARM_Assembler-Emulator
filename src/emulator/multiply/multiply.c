@@ -38,10 +38,11 @@ void set_CPSR (word_t result, word_t *cpsr) {
 void execute_multiply (byte_t *firstByte, word_t *registers) {
 	if (get_A(firstByte[1])) {
 		registers[get_Rd_multiply(firstByte[1])] 
-			= get_Rm(firstByte[3]) * get_Rs(firstByte[2]) + get_Rn_multiply(firstByte[2]);
+			= registers[get_Rm(firstByte[3])] * registers[get_Rs(firstByte[2])]
+			 + registers[get_Rn_multiply(firstByte[2])];
 	} else {
 		registers[get_Rd_multiply(firstByte[1])]
-			= get_Rm(firstByte[3]) * get_Rs(firstByte[2]); 
+			= registers[get_Rm(firstByte[3])] * registers[get_Rs(firstByte[2])]; 
 	}
 	
 	if (get_S(firstByte[1])) {
