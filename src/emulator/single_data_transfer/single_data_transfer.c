@@ -114,7 +114,7 @@ static void load(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 }
 
 static void store(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
-	memory[registers[Rn]] = registers[Rd];
+	memory[registers[Rd]] = registers[Rn];
 }
 
 // Used in case of pre-indexing. Offset is applied and new register address is returned.
@@ -155,36 +155,32 @@ static void change_base_register_by_offset(
 	// Offset is added when Up bit is set.
 	if (get_up_bit(firstByte[1])) {
 
-		registers[Rn] = add_offset(
-				Rn, 
-				get_offset(
+		registers[Rn] = registers[Rn] +   
+				4 * get_offset(
 						firstByte[2], 
 						firstByte[3], 
 						immediate_operand(firstByte[0]), 
-						registers)
-		);	
+						registers);
 
 	} else {
 
-		registers[Rn] = subtract_offset(
-				Rn, 
-				get_offset(
+		registers[Rn] = registers[Rn] -   
+				4 * get_offset(
 						firstByte[2], 
 						firstByte[3], 
 						immediate_operand(firstByte[0]), 
-						registers)
-		);	
+						registers);
 
 	}
 }
 
 
 static byte_t add_offset(byte_t Rn, byte_t offset) {
-	return Rn + offset;	
+	return Rn + 4 * offset;	
 }
 
 static byte_t subtract_offset(byte_t Rn, byte_t offset) {
-	return Rn - offset;
+	return Rn - 4 * offset;
 }
 
 static byte_t immediate_operand (byte_t firstByte) {
