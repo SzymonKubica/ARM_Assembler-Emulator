@@ -95,14 +95,15 @@ static void execute_post_indexing(
 		byte_t *memory) 
 {
 	byte_t Rn = get_Rn(firstByte[1]);
-	Rn = apply_offset(Rn, firstByte, registers);
-
+	Rn = registers[Rn];
 
 	if (get_load_store_bit(firstByte[1])) {
 		load(Rn, get_Rd(firstByte[2]), registers, memory);
 	} else {
 		store(Rn, get_Rd(firstByte[2]), registers, memory);
 	}
+
+	Rn = apply_offset(Rn, firstByte, registers);
 
 	change_base_register_by_offset(Rn, firstByte, registers);
 }
@@ -161,8 +162,7 @@ static void change_base_register_by_offset(
 	// Offset is added when Up bit is set.
 	if (get_up_bit(firstByte[1])) {
 
-		registers[Rn] = registers[Rn] +   
-				4 * get_offset(
+		registers[Rn] = registers[Rn] + get_offset(
 						firstByte[2], 
 						firstByte[3], 
 						immediate_operand(firstByte[0]), 
@@ -171,7 +171,7 @@ static void change_base_register_by_offset(
 	} else {
 
 		registers[Rn] = registers[Rn] -   
-				4 * get_offset(
+				get_offset(
 						firstByte[2], 
 						firstByte[3], 
 						immediate_operand(firstByte[0]), 
