@@ -43,8 +43,6 @@ static void change_base_register_by_offset(
 		byte_t *firstByte, 
 		word_t *registers);
 
-static byte_t subtract_offset(byte_t Rn, byte_t offset);
-
 // Decoding functions for reading 32b instruction.
 static byte_t immediate_operand (byte_t firstByte);
 static byte_t get_pre_post_indexing_bit(byte_t firstByte);
@@ -145,14 +143,11 @@ static byte_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers) {
 
 	} else {
 
-		Rn = subtract_offset(
-				Rn, 
-				get_offset(
+		Rn = registers[Rn] - get_offset(
 						firstByte[2], 
 						firstByte[3], 
 						immediate_operand(firstByte[0]), 
-						registers)
-		);	
+						registers);	
 
 	}
 	return Rn;
@@ -185,9 +180,7 @@ static void change_base_register_by_offset(
 	}
 }
 
-static byte_t subtract_offset(byte_t Rn, byte_t offset) {
-	return Rn - offset;
-}
+
 
 static byte_t immediate_operand (byte_t firstByte) {
 	return (firstByte & 2) >> 1;
