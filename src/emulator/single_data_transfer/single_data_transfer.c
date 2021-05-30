@@ -118,10 +118,10 @@ static void load(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 }
 
 static void store(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
-	word_t storeWord = registers[Rn];
+	word_t storeWord = registers[Rd];
 	// store word to little Endian
 	for (int i = 0; i < 4; i++) {
-		memory[registers[Rd] + i] = storeWord && 0xff;
+		memory[Rn + i] = storeWord;
 		storeWord >>= 8;
 	}
 	// registers[Rd] = loadWord;

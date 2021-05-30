@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 
 	printf("Non-zero memory:\n");
 	
-	for (int i = 0; i < num_words; i++) {
+	for (int i = 0; i < memorySize / 4; i++) {
 		// check memory not 0
 		if (!(memory[i*4] || memory[i*4 + 1] || memory[i*4 + 2] || memory[i*4 + 3])) {
 			continue;
