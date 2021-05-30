@@ -40,25 +40,6 @@ static byte_t get_S (byte_t secondByte) {
 	return get_First_Nibble(secondByte) & 1;
 }
 
-static word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word, bit_t *carry) {
-	switch (shiftType){
-		case 0: // logical left
-			*carry = (((word << shiftAmount) - 1) >> 31) & 1; 
-			return word << shiftAmount;
-		case 1: // logical right
-			*carry = ((word >> shiftAmount) - 1) & 1; 
-			return word >> shiftAmount;
-		case 2: // arithmetic right
-			*carry = ((word >> shiftAmount) -1) & 1; 
-			return word / (1 << shiftAmount);
-		case 3: // rotate right
-			*carry = ((word >> shiftAmount) -1) & 1; 
-			return  (word >> shiftAmount) | (word << (32 - shiftAmount));
-		default: // ERROR: Should never be reached
-			return -1;
-	}
-} 
-
 static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
 		byte_t immediate_operand, word_t *registers, bit_t *carry) {
 
