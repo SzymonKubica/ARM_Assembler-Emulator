@@ -33,11 +33,11 @@ static void execute_post_indexing(
 		word_t *registers, 
 		byte_t *memory);
 
-static void load(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory);
-static void store(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory);
+static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory);
+static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory);
 
 // Functions applying an offset to the base register.
-static byte_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers);
+static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers);
 static void change_base_register_by_offset(
 		byte_t Rn, 
 		byte_t *firstByte, 
@@ -78,8 +78,8 @@ static void execute_pre_indexing(
 		word_t *registers, 
 		byte_t *memory) 
 {
-	byte_t Rn = get_Rn(firstByte[1]);
-	Rn = apply_offset(Rn, firstByte, registers);
+	byte_t Rn_register = get_Rn(firstByte[1]);
+	word_t Rn = apply_offset(Rn_register, firstByte, registers);
 
 	if (get_load_store_bit(firstByte[1])) {
 		load(Rn, get_Rd(firstByte[2]), registers, memory);
@@ -94,8 +94,8 @@ static void execute_post_indexing(
 		word_t *registers,
 		byte_t *memory) 
 {
-	byte_t Rn = get_Rn(firstByte[1]);
-	Rn = registers[Rn];
+	byte_t Rn_register = get_Rn(firstByte[1]);
+	word_t Rn = registers[Rn_register];
 
 	if (get_load_store_bit(firstByte[1])) {
 		load(Rn, get_Rd(firstByte[2]), registers, memory);
@@ -108,7 +108,7 @@ static void execute_post_indexing(
 	change_base_register_by_offset(Rn, firstByte, registers);
 }
 
-static void load(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
+static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 	word_t loadWord = 0;
 	// load entire word at memory[Rn] in Big Endian
 	for (int i = 3; i >= 0; i--) {
@@ -118,7 +118,7 @@ static void load(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 	registers[Rd] = loadWord;
 }
 
-static void store(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
+static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 	word_t storeWord = registers[Rd];
 	// store word to little Endian
 	for (int i = 0; i < 4; i++) {
@@ -132,11 +132,13 @@ static void store(byte_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 
 // Used in case of pre-indexing. Offset is applied and new register address is returned.
 // The original register remains unchanged.
-static byte_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers) {
+static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers) {
 	// Offset is added when Up bit is set.
+	word_t r = registers[Rn];
+
 	if (get_up_bit(firstByte[1])) {
 
-		Rn = registers[Rn] + get_offset(
+		r += get_offset(
 						firstByte[2], 
 						firstByte[3], 
 						immediate_operand(firstByte[0]), 
@@ -144,14 +146,14 @@ static byte_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers) {
 
 	} else {
 
-		Rn = registers[Rn] - get_offset(
+		r -= get_offset(
 						firstByte[2], 
 						firstByte[3], 
 						immediate_operand(firstByte[0]), 
 						registers);	
 
 	}
-	return Rn;
+	return r;
 }
 
 static void change_base_register_by_offset(
