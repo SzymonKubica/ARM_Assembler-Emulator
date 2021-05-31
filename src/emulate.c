@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "cond.h"
 #include "defns.h"
+#include "binaryString.h"
 
 
 #include "data_processing.h"
@@ -16,7 +18,7 @@
 
 enum instruction{data_processing, multiply, single_data_transfer, branch};
 
-// parse file into fileArray and update num words
+// Parse file into fileArray and update num words.
 void parse_file (byte_t *fileArray, const char *arg, int *words) {
 	
 	FILE *file;
@@ -48,7 +50,7 @@ enum instruction decode (byte_t * word) {
 	switch (code) {
 		case 1 :
 			return single_data_transfer;
-		case 3: 
+		case 2: 
 			return branch;
 		default:
 			// data processing or multiply
@@ -62,7 +64,8 @@ enum instruction decode (byte_t * word) {
 	}
 }
 
-void execute (byte_t *word, word_t *registers, enum instruction code, byte_t *memory) {
+void execute (byte_t *word, word_t *registers, byte_t *memory) {
+	enum instruction code = decode (word);
 	switch (code) {
 		case data_processing:
 			execute_data_processing (word, registers);
@@ -80,6 +83,12 @@ void execute (byte_t *word, word_t *registers, enum instruction code, byte_t *me
 
 }
 
+void reverse_instruction (byte_t *fetched_Instruction, byte_t *decoded_Instruction) {
+	for (int i = 0; i< 4; i++) {
+		decoded_Instruction[i] = fetched_Instruction[3-i];
+	}
+}
+
 int main(int argc, char **argv) {
 	
 	byte_t *memory = malloc(memorySize); // holds entire file
@@ -93,27 +102,19 @@ int main(int argc, char **argv) {
 
 	parse_file (memory, argv[1], &num_words);
 
-	/*
-	// print file as hex 
-	for (int i =0; i < num_words * 4; i++) {
-		printf("%x ", memory[i]);
-	}
-	printf("\n");
-	*/
 
 	// 3 stage pipeline
 	byte_t *fetched_Instruction;
-	byte_t *decoded_Instruction;
+	byte_t decoded_Instruction[4] = {0,0,0,0};
 	byte_t *execute_Instruction;
 
 	// initialisation:
 	fetched_Instruction = memory;
 	registers[PC] += 4;
 
-	decoded_Instruction = fetched_Instruction;
+	reverse_instruction (fetched_Instruction, decoded_Instruction);
 	int n = registers[PC];
 	fetched_Instruction = memory + n;
-
 	registers[PC] += 4;
 
 	// main loop
@@ -124,23 +125,41 @@ int main(int argc, char **argv) {
 		
 		execute_Instruction = decoded_Instruction;
 		
-		byte_t reversed_Instruction[4];
+		bool isBranch;
 
-		for (int i = 0; i< 4; i++) {
-			reversed_Instruction[i] = execute_Instruction[3-i];
-		}
-		
-		if (checkCond(reversed_Instruction[0], registers[CPSR])) {
+		if (checkCond(decoded_Instruction[0], registers[CPSR])) {
+			execute(execute_Instruction, registers, memory);
 
-			execute(reversed_Instruction, registers, decode(reversed_Instruction), memory);
+			// Keeps track of whether a branch instruction was executed.
+			isBranch = (branch == decode(execute_Instruction)); 
 		}
 
-		decoded_Instruction = fetched_Instruction;
+		if (!isBranch) { 
+			// Decode the instruction.
+			reverse_instruction (fetched_Instruction, decoded_Instruction);
 
-		int n = registers[PC];
-		fetched_Instruction = memory + n;
+			int n = registers[PC];
+			fetched_Instruction = memory + n;
 
-		registers[PC] += 4;
+			registers[PC] += 4;
+		} else {
+
+			// fetch a new instruction. 
+			// The previous fetchted instructino is discarded.
+			int n = registers[PC];
+			fetched_Instruction = memory + n;
+
+			// Decode the instruction.
+			reverse_instruction (fetched_Instruction, decoded_Instruction);
+
+			registers[PC] += 4;
+
+			// Another instruction is fetched to fill the 3 stage pipeline.
+			n = registers[PC];
+			fetched_Instruction = memory + n;
+
+			registers[PC] += 4;
+		}
 	}
 	// Print Output  
 	// print program state
@@ -154,7 +173,12 @@ int main(int argc, char **argv) {
 
 	printf("Non-zero memory:\n");
 	
-	for (int i = 0; i < num_words; i++) {
+	for (int i = 0; i < memorySize / 4; i++) {
+		// check memory not 0
+		if (!(memory[i*4] || memory[i*4 + 1] || memory[i*4 + 2] || memory[i*4 + 3])) {
+			continue;
+		}
+
 		printf("0x%08x: 0x", i * 4);
 		for (int n = 0; n < 4 ; n++) {
 			printf("%02x", memory[i * 4 + n]);

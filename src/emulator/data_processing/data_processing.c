@@ -40,25 +40,6 @@ static byte_t get_S (byte_t secondByte) {
 	return get_First_Nibble(secondByte) & 1;
 }
 
-static word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word, bit_t *carry) {
-	switch (shiftType){
-		case 0: // logical left
-			*carry = (((word << shiftAmount) - 1) >> 31) & 1; 
-			return word << shiftAmount;
-		case 1: // logical right
-			*carry = ((word >> shiftAmount) - 1) & 1; 
-			return word >> shiftAmount;
-		case 2: // arithmetic right
-			*carry = ((word >> shiftAmount) -1) & 1; 
-			return word / (1 << shiftAmount);
-		case 3: // rotate right
-			*carry = ((word >> shiftAmount) -1) & 1; 
-			return  (word >> shiftAmount) | (word << (32 - shiftAmount));
-		default: // ERROR: Should never be reached
-			return -1;
-	}
-} 
-
 static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
 		byte_t immediate_operand, word_t *registers, bit_t *carry) {
 
@@ -86,7 +67,7 @@ static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte,
 		} else {
 			// Bit 4 is 1: shift by a specified register.
 			//(optional)
-			byte_t Rs = get_First_Nibble (thirdByte);
+			byte_t Rs = get_Second_Nibble (thirdByte);
 			return shifter (shiftType, registers[Rs], wordToShift, carry);
 		}
 	}
@@ -99,7 +80,7 @@ static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte,
 static void set_CPSR (word_t result, word_t *cpsr, bit_t logical_op, bit_t carry) {
 	// Set N-bit
 	*cpsr &= 0x7fffffff;
-	*cpsr |= (result >> 31) << 31;
+	*cpsr |= ((result >> 30) & 1) << 31;
 	// Set Z-bit -- DOUBLE CHECK if-and-only-if on page VI of spec
 	if(!result) {
 		*cpsr |= 0x40000000;
@@ -109,7 +90,7 @@ static void set_CPSR (word_t result, word_t *cpsr, bit_t logical_op, bit_t carry
 
 	// Set C-bit to 0
 	*cpsr &= 0xdfffffff;
-	*cpsr |= (carry << 28);
+	*cpsr |= (carry << 29);
 
 }
 
@@ -144,13 +125,13 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 			registers[Rd] = registers[Rn] - operand2;
 			result = registers[Rd]; 
 			//logical_op = -1;
-			carry = (long int) result < 0 ? 0 : 1;
+			carry = operand2 > registers[Rn] ? 0 : 1;
 			break;
 		case rsb:
 			registers[Rd] = operand2 - registers[Rn];
 			result = registers[Rd];
 		       	//logical_op = -1;
-			carry = (long int) result < 0 ? 0 : 1;
+			carry = operand2 > registers[Rn] ? 0 : 1;
 			break;
 		case add:
 			registers[Rd] = registers[Rn] + operand2;
@@ -168,10 +149,10 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 			logical_op = 1;
 			break;
 		case cmp:
-			// if borrow carry = 0
+			// if borrow carry = 1
 			result = registers[Rn] - operand2; 
 			//logical_op = -1;
-			carry = (long int) result < 0 ? 0 : 1;
+			carry = operand2 > registers[Rn] ? 0 : 1;
 			break;
 		case orr:
 			registers[Rd] = registers[Rn] | operand2; 

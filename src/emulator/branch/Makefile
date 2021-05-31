@@ -3,7 +3,7 @@ CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -
 LDLIBS = -L../../lib -lbinaryString
 LIB    = libbranch.a
 LIBOBJ = branch.o
-BUILD  = $(LIB)
+BUILD  = $(LIB) branch_test
 
 all: $(BUILD)
 
@@ -12,5 +12,10 @@ clean:
 
 $(LIB): $(LIBOBJ)
 	ar rcs $(LIB) $(LIBOBJ)
+
+branch_test: branch_test.o branch.o
+branch_test.o: branch.h
+branch.o: branch.h
+
 
 
