@@ -110,6 +110,10 @@ static void execute_post_indexing(
 
 static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 	word_t loadWord = 0;
+	if (Rn < 0 || 65536 < Rn) {
+		printf("Error: Out of bounds memory access at address 0x%08x\n", Rn);
+		return;
+	}
 	// load entire word at memory[Rn] in Big Endian
 	for (int i = 3; i >= 0; i--) {
 		loadWord = loadWord << 8;
