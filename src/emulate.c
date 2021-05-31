@@ -3,6 +3,7 @@
 
 #include "cond.h"
 #include "defns.h"
+#include "binaryString.h"
 
 
 #include "data_processing.h"
@@ -48,7 +49,7 @@ enum instruction decode (byte_t * word) {
 	switch (code) {
 		case 1 :
 			return single_data_transfer;
-		case 3: 
+		case 2: 
 			return branch;
 		default:
 			// data processing or multiply
