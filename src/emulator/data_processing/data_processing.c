@@ -45,18 +45,18 @@ static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte,
 
 	// Operand2 immediate value
 	if (immediate_operand) {
-		byte_t rotation = (thirdByte & readBinary("1111")) << 1; 
+		byte_t rotation = (thirdByte & 0xf) << 1; 
 		return shifter (3, rotation, fourthByte, carry);
 	}
 
 	// Operand2 register
 	else {		
-		byte_t Rm = fourthByte & readBinary("1111");
+		byte_t Rm = fourthByte & 0xf;
 
 		// The shift is specified by the second half of the thirdByte and the 
 		// first half of the fourthByte.
 
-		byte_t shift = ((thirdByte & readBinary("1111")) << 4) | (fourthByte >> 4);
+		byte_t shift = ((thirdByte & 0xf) << 4) | (fourthByte >> 4);
 		byte_t shiftType = (shift & readBinary("110")) >> 1;
 
 		word_t wordToShift = registers[Rm];

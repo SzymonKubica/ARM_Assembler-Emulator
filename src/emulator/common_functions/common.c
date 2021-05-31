@@ -12,6 +12,9 @@ byte_t get_Second_Nibble (byte_t byte) {
 }
 
 word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word, bit_t *carry) {
+	if (shiftAmount == 0) {
+		return word;
+	}
 	switch (shiftType){
 		case 0: // logical left
 			*carry = ((word << (shiftAmount - 1)) >> 31) & 1; 
