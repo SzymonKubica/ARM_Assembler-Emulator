@@ -38,10 +38,6 @@ static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory);
 
 // Functions applying an offset to the base register.
 static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers);
-static void change_base_register_by_offset(
-		byte_t Rn, 
-		byte_t *firstByte, 
-		word_t *registers);
 
 // Decoding functions for reading 32b instruction.
 static byte_t immediate_operand (byte_t firstByte);
@@ -103,9 +99,7 @@ static void execute_post_indexing(
 		store(Rn, get_Rd(firstByte[2]), registers, memory);
 	}
 
-	Rn = apply_offset(Rn, firstByte, registers);
-
-	change_base_register_by_offset(Rn, firstByte, registers);
+	registers[Rn_register] = apply_offset(Rn_register, firstByte, registers);
 }
 
 static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
@@ -159,33 +153,6 @@ static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers) {
 	}
 	return r;
 }
-
-static void change_base_register_by_offset(
-		byte_t Rn, 
-		byte_t *firstByte, 
-		word_t *registers) 
-{
-	// Offset is added when Up bit is set.
-	if (get_up_bit(firstByte[1])) {
-
-		registers[Rn] = registers[Rn] + get_offset(
-						firstByte[2], 
-						firstByte[3], 
-						immediate_operand(firstByte[0]), 
-						registers);
-
-	} else {
-
-		registers[Rn] = registers[Rn] -   
-				get_offset(
-						firstByte[2], 
-						firstByte[3], 
-						immediate_operand(firstByte[0]), 
-						registers);
-
-	}
-}
-
 
 
 static byte_t immediate_operand (byte_t firstByte) {
