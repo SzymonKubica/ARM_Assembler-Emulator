@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "cond.h"
 #include "defns.h"
@@ -124,17 +125,38 @@ int main(int argc, char **argv) {
 		
 		execute_Instruction = decoded_Instruction;
 		
+		bool isBranch;
+
 		if (checkCond(decoded_Instruction[0], registers[CPSR])) {
 			execute(execute_Instruction, registers, memory);
+			isBranch = (branch == decode(execute_Instruction)); 
 		}
 
-		//decode instruction
-		reverse_instruction (fetched_Instruction, decoded_Instruction);
+		if (!isBranch) { 
+			// No branching, PC unaffected by execution.
+			// decode instruction
+			reverse_instruction (fetched_Instruction, decoded_Instruction);
 
-		int n = registers[PC];
-		fetched_Instruction = memory + n;
+			int n = registers[PC];
+			fetched_Instruction = memory + n;
 
-		registers[PC] += 4;
+			registers[PC] += 4;
+		} else {
+			// PC changed by execution, branch instruction detected.
+
+			// fetch a new instruction.
+			int n = registers[PC];
+			fetched_Instruction = memory + n;
+
+			reverse_instruction (fetched_Instruction, decoded_Instruction);
+
+			registers[PC] += 4;
+
+			n = registers[PC];
+			fetched_Instruction = memory + n;
+
+			registers[PC] += 4;
+		}
 	}
 	// Print Output  
 	// print program state
