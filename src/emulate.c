@@ -18,7 +18,7 @@
 
 enum instruction{data_processing, multiply, single_data_transfer, branch};
 
-// parse file into fileArray and update num words
+// Parse file into fileArray and update num words.
 void parse_file (byte_t *fileArray, const char *arg, int *words) {
 	
 	FILE *file;
@@ -129,12 +129,13 @@ int main(int argc, char **argv) {
 
 		if (checkCond(decoded_Instruction[0], registers[CPSR])) {
 			execute(execute_Instruction, registers, memory);
+
+			// Keeps track of whether a branch instruction was executed.
 			isBranch = (branch == decode(execute_Instruction)); 
 		}
 
 		if (!isBranch) { 
-			// No branching, PC unaffected by execution.
-			// decode instruction
+			// Decode the instruction.
 			reverse_instruction (fetched_Instruction, decoded_Instruction);
 
 			int n = registers[PC];
@@ -142,16 +143,18 @@ int main(int argc, char **argv) {
 
 			registers[PC] += 4;
 		} else {
-			// PC changed by execution, branch instruction detected.
 
-			// fetch a new instruction.
+			// fetch a new instruction. 
+			// The previous fetchted instructino is discarded.
 			int n = registers[PC];
 			fetched_Instruction = memory + n;
 
+			// Decode the instruction.
 			reverse_instruction (fetched_Instruction, decoded_Instruction);
 
 			registers[PC] += 4;
 
+			// Another instruction is fetched to fill the 3 stage pipeline.
 			n = registers[PC];
 			fetched_Instruction = memory + n;
 

@@ -13,7 +13,7 @@ static int get_sign_extended_offset (word_t offset) {
 	// Pre: Offset is precisely 26 bits long after shifting.
   if ((offset >> 25) == 1) { // If the most significant bit is non-zero.
 
-		// We copy the leftmost bit 8 times.
+		// We copy the leftmost bit 6 times.
 		word_t filler = readBinaryWord("1111 1100 0000 0000 0000 0000 0000 0000");
 		return (int) (filler | offset);
 	} else {
@@ -25,7 +25,6 @@ static int get_sign_extended_offset (word_t offset) {
 
 void execute_branch (byte_t *firstByte, word_t *registers) {
 	word_t offset = get_offset(firstByte); 
-	//offset = readBinaryWord("1111 1111 1111 1111 11111 1111") & offset << 2;
 
 	offset = offset << 2;
 
