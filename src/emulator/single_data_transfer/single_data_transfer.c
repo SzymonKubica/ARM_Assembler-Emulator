@@ -101,9 +101,12 @@ static void execute_post_indexing(
 }
 
 static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
-	word_t loadWord = 0;
 	if (is_GPIO_address(Rn)) {
 		print_GPIO_access_message(Rn);	
+		// There are 44 bytes needed to accomodate memory up to 0x202001c + 4 bytes
+		byte_t *gpio_memory = malloc(44);
+
+		initialise_GPIO_pins(gpio_memory);
 
 		// Spec required to assume that the value of memory at GPIO address
 		// is the address itself.
@@ -114,6 +117,7 @@ static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 		return;
 	}
 	// load entire word at memory[Rn] in Big Endian
+	word_t loadWord = 0;
 	for (int i = 3; i >= 0; i--) {
 		loadWord = loadWord << 8;
 		loadWord |= memory[Rn + i];
@@ -122,8 +126,19 @@ static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 }
 
 static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
-	word_t storeWord = registers[Rd];
+
+	if (is_GPIO_address(Rn)) {
+		set_pin_functionality(Rn, registers[Rd], memory);
+		return;
+	} else if (Rn == GPIO_clearing) {
+		clear_pin(registers[Rd], memory);
+		return;
+	} else if (Rn == GPIO_setting) {
+		set_pin(registers[Rd], memory);
+		return;
+	}
 	// store word to little Endian
+	word_t storeWord = registers[Rd];
 	for (int i = 0; i < 4; i++) {
 		memory[Rn + i] = storeWord;
 		storeWord >>= 8;

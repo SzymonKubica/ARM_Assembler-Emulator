@@ -30,39 +30,79 @@ enum pin_function from_binary_to_pin_function(nibble_t code) {
 	}
 }
 
-void initialise_GPIO_pins(word_t *memory) {
+
+static void write_word_to_memory_at(word_t address, word_t word, byte_t *memory) {
+	for (int i = 0; i < 4; i++) {
+		memory[address + i] = word;
+		word >>= 8;
+	}
+}
+
+static word_t read_word_from_memory_at(word_t address, byte_t *memory) {
+		word_t loadWord;
+	for (int i = 3; i >= 0; i--) {
+		loadWord = loadWord << 8;
+		loadWord |= memory[address + i];
+	}
+	return loadWord;
+}
+
+void initialise_GPIO_pins(byte_t *memory) {
 
 	/* As outlined in the spec, each GPIO memory address
 	 * should return the valuse of the address. Therefore, we
 	 * need to initialise these addresses.
 	 */
 
-	 memory[GPIO_20_29] = GPIO_20_29;
-	 memory[GPIO_10_19] = GPIO_10_19;
-	 memory[GPIO_00_09] = GPIO_00_09;
+	 write_word_to_memory_at(GPIO_20_29_shifted, GPIO_20_29, memory);
+	 write_word_to_memory_at(GPIO_10_19_shifted, GPIO_10_19, memory);
+	 write_word_to_memory_at(GPIO_00_09_shifted, GPIO_00_09, memory);
 }
-
-enum pin_function get_pin_functionality(int pin_number, word_t *memory) {
+enum pin_function get_pin_functionality(int pin_number, byte_t *memory) {
 
 	nibble_t pin_code;
 	int pin_offset = 3 * (pin_number % 10);
 	word_t mask = readBinaryWord("111") << pin_offset;
+	word_t pin_range;
 
 	if (0 <= pin_number && pin_number<= 9) {
 
-		pin_code = (memory[GPIO_00_09] & mask) >> pin_offset;
+		pin_range = read_word_from_memory_at(GPIO_00_09_shifted, memory);
 
 	} else if (10 <= pin_number && pin_number <= 19) {
 
-		pin_code = (memory[GPIO_10_19] & mask) >> pin_offset;
+		pin_range = read_word_from_memory_at(GPIO_10_19_shifted, memory);
 
 	} else if (20 <= pin_number && pin_number <= 29) {
 
-		pin_code = (memory[GPIO_20_29] & mask) >> pin_offset;
+		pin_range = read_word_from_memory_at(GPIO_20_29_shifted, memory);
 
 	}
+		pin_code = (pin_range &  mask) >> pin_offset;
 
 	return from_binary_to_pin_function(pin_code);
+}
+
+void set_pin_functionality(word_t location, word_t value, byte_t *memory) {
+	memory[location] |= value;
+}
+
+void clear_pin(int pin_number, byte_t *memory) {
+	assert(get_pin_functionality(pin_number, memory) == output);
+	
+	// Setting a bit in clear area corresponding to the pin number clears the pin.
+	write_word_to_memory_at(GPIO_clearing_shifted, (1 << pin_number), memory);
+
+	printf("PIN OFF");
+}
+
+void set_pin(int pin_number, byte_t *memory) {
+	assert(get_pin_functionality(pin_number, memory) == output);
+	
+	// Setting a bit in set area corresponding to the pin number sets the pin.
+	write_word_to_memory_at(GPIO_setting_shifted, (1 << pin_number), memory);
+
+	printf("PIN ON");
 }
 
 
