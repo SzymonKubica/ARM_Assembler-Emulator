@@ -88,9 +88,17 @@ void set_pin_functionality(word_t location, word_t value, byte_t *memory) {
 	write_word_to_memory_at(location, (past_value | value), memory);
 }
 
+static int get_pin_number(word_t shifted_pin) {
+	int counter = -1;
+	while(shifted_pin) {
+		counter++;
+		shifted_pin = shifted_pin >> 1;
+	}
+	return counter;
+}
+
 void clear_pin(word_t shifted_pin, byte_t *memory) {
-	// TODO: fix the assertions.
-	//assert(get_pin_functionality(pin_number, memory) == output);
+	assert(get_pin_functionality(get_pin_number(shifted_pin), memory) == output);
 	
 	// Setting a bit in clear area corresponding to the pin number clears the pin.
 	write_word_to_memory_at(GPIO_clearing_shifted, shifted_pin, memory);
@@ -99,7 +107,7 @@ void clear_pin(word_t shifted_pin, byte_t *memory) {
 }
 
 void set_pin(word_t shifted_pin, byte_t *memory) {
-	//assert(get_pin_functionality(pin_number, memory) == output);
+	assert(get_pin_functionality(get_pin_number(shifted_pin), memory) == output);
 	
 	// Setting a bit in set area corresponding to the pin number sets the pin.
 	write_word_to_memory_at(GPIO_setting_shifted, shifted_pin, memory);
