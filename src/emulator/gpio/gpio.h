@@ -1,8 +1,5 @@
 #include <stdbool.h>
-#include <stdio.h>
-#include <assert.h>
 
-#include "binaryString.h"
 #include "../../defns.h"
 
 #define GPIO_20_29_shifted 0x8 //0x20200008
@@ -18,6 +15,7 @@
 
 #define GPIO_clearing 0x20200028
 #define GPIO_setting 0x2020001c
+
 bool is_GPIO_address(word_t Rn);
 
 void print_GPIO_access_message(word_t Rn);

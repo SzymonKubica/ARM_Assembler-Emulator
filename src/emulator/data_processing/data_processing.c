@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "../../defns.h"
-#include "binaryString.h"
 #include "data_processing.h"
 #include "common.h"
 

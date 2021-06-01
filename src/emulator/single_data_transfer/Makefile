@@ -1,6 +1,6 @@
 CC     = gcc
-CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../../lib -I../common_functions -I../gpio
-LDLIBS = -L../../lib -lbinaryString -L../common_functions/ -lcommon -L../gpio/ -lgpio
+CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../common_functions -I../gpio
+LDLIBS = -L../common_functions/ -lcommon -L../gpio/ -lgpio
 LIB    = libsingle_data_transfer.a
 LIBOBJ = single_data_transfer.o
 BUILD  = $(LIB) 

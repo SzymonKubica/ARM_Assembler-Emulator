@@ -1,4 +1,8 @@
+#include <assert.h>
+#include <stdio.h>
+
 #include "gpio.h"
+#include "common.h"
 
 bool is_GPIO_address(word_t Rn) {
 	return (Rn == GPIO_00_09) || (Rn == GPIO_10_19) || (Rn == GPIO_20_29);

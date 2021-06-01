@@ -2,10 +2,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "cond.h"
 #include "defns.h"
-#include "binaryString.h"
-
+#include "cond.h"
 
 #include "data_processing.h"
 #include "multiply.h"

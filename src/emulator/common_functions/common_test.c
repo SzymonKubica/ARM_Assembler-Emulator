@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "binaryString.h"
+#include "../../defns.h"
+#include "common.h"
 
 void testcond(bool condition, char *testname) {
 	printf("T %s: %s\n", testname, (condition ? "OK" : "FAIL"));

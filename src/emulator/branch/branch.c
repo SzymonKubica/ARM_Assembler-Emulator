@@ -1,7 +1,6 @@
 #include <stdio.h> 
 #include "../../defns.h"
-#include "binaryString.h"
-#include "../common_functions/common.h"
+#include "common.h"
 
 #define PC 15
 

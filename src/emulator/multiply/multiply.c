@@ -1,6 +1,5 @@
 #include <stdio.h> 
 #include "../../defns.h"
-#include "binaryString.h"
 #include "common.h"
 
 byte_t get_Rn_multiply (byte_t thirdByte) {

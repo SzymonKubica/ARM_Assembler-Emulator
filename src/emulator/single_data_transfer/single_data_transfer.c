@@ -3,7 +3,6 @@
 #include <stdbool.h>
 
 #include "../../defns.h"
-#include "binaryString.h"
 #include "common.h"
 #include "gpio.h"
 
