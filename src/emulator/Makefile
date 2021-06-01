@@ -9,6 +9,7 @@ clean:
 	cd single_data_transfer; make clean
 	cd multiply; make clean
 	cd common_functions; make clean
+	cd gpio; make clean
 	
 libs: 
 	cd ../lib; make
@@ -18,6 +19,7 @@ libs:
 	cd single_data_transfer; make
 	cd multiply; make
 	cd data_processing; make
+	cd gpio; make
 
 
 

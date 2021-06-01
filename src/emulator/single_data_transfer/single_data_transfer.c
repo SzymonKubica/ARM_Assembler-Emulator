@@ -1,40 +1,50 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
+
 #include "../../defns.h"
 #include "binaryString.h"
 #include "common.h"
-
-static byte_t get_Rn (byte_t secondByte) {
-	return secondByte & 0xf;
-}
-
-static byte_t get_Rd (byte_t thirdByte) {
-	return thirdByte >> 4;
-}
+#include "gpio.h"
 
 /*
  * Single data transfer module: implementation.
  */ 
+
 // Execute function:
 void execute_single_data_transfer (
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t *memory);
+		byte_t *memory,
+		byte_t *gpio_memory);
 
 // Helper functions for execute_single_data_transfer.
 // Declared in descending level of abstraction.
 static void execute_pre_indexing(
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t *memory);
+		byte_t *memory,
+		byte_t *gpio_memory);
 
 static void execute_post_indexing(
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t *memory);
+		byte_t *memory,
+		byte_t *gpio_memory);
 
-static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory);
-static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory);
+static void load(
+		word_t Rn, 
+		byte_t Rd, 
+		word_t *registers, 
+		byte_t *memory,
+		byte_t *gpio_memory);
+
+static void store(
+		word_t Rn, 
+		byte_t Rd, 
+		word_t *registers, 
+		byte_t *memory,
+		byte_t *gpio_memory);
 
 // Functions applying an offset to the base register.
 static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers);
@@ -45,6 +55,8 @@ static byte_t get_pre_post_indexing_bit(byte_t firstByte);
 static byte_t get_up_bit(byte_t secondByte);
 static byte_t get_load_store_bit(byte_t secondByte);
 static byte_t get_shifted_register(byte_t thirdByte);
+static byte_t get_Rn (byte_t secondByte);
+static byte_t get_Rd (byte_t thirdByte);
 static word_t get_offset(
 		byte_t thirdByte, 
 		byte_t fourthByte, 
@@ -55,15 +67,16 @@ static word_t get_offset(
 void execute_single_data_transfer (
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t *memory) 
+		byte_t *memory,
+		byte_t *gpio_memory) 
 {
 	if (get_pre_post_indexing_bit(firstByte[0])) {
 
-		execute_pre_indexing(firstByte, registers, memory);
+		execute_pre_indexing(firstByte, registers, memory, gpio_memory);
 
 	} else {
 
-		execute_post_indexing(firstByte, registers, memory);
+		execute_post_indexing(firstByte, registers, memory, gpio_memory);
 
 	}
 }
@@ -72,15 +85,16 @@ void execute_single_data_transfer (
 static void execute_pre_indexing(
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t *memory) 
+		byte_t *memory,
+		byte_t *gpio_memory) 
 {
 	byte_t Rn_register = get_Rn(firstByte[1]);
 	word_t Rn = apply_offset(Rn_register, firstByte, registers);
 
 	if (get_load_store_bit(firstByte[1])) {
-		load(Rn, get_Rd(firstByte[2]), registers, memory);
+		load(Rn, get_Rd(firstByte[2]), registers, memory, gpio_memory);
 	} else {
-		store(Rn, get_Rd(firstByte[2]), registers, memory);
+		store(Rn, get_Rd(firstByte[2]), registers, memory, gpio_memory);
 	}
 }
 
@@ -88,27 +102,35 @@ static void execute_pre_indexing(
 static void execute_post_indexing(
 		byte_t *firstByte, 
 		word_t *registers,
-		byte_t *memory) 
+		byte_t *memory,
+		byte_t *gpio_memory) 
 {
 	byte_t Rn_register = get_Rn(firstByte[1]);
 	word_t Rn = registers[Rn_register];
 
 	if (get_load_store_bit(firstByte[1])) {
-		load(Rn, get_Rd(firstByte[2]), registers, memory);
+		load(Rn, get_Rd(firstByte[2]), registers, memory, gpio_memory);
 	} else {
-		store(Rn, get_Rd(firstByte[2]), registers, memory);
+		store(Rn, get_Rd(firstByte[2]), registers, memory, gpio_memory);
 	}
 
 	registers[Rn_register] = apply_offset(Rn_register, firstByte, registers);
 }
 
-static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
-	word_t loadWord = 0;
-	if (Rn < 0 || 65536 < Rn) {
+static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_t *gpio_memory) {
+	if (is_GPIO_address(Rn)) {
+		print_GPIO_access_message(Rn);	
+
+		// Spec required to assume that the value of memory at GPIO address
+		// is the address itself.
+		registers[Rd] = Rn;
+		return;
+	} else if (Rn < 0 || 65536 < Rn) {
 		printf("Error: Out of bounds memory access at address 0x%08x\n", Rn);
 		return;
 	}
 	// load entire word at memory[Rn] in Big Endian
+	word_t loadWord = 0;
 	for (int i = 3; i >= 0; i--) {
 		loadWord = loadWord << 8;
 		loadWord |= memory[Rn + i];
@@ -116,9 +138,22 @@ static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 	registers[Rd] = loadWord;
 }
 
-static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
-	word_t storeWord = registers[Rd];
+static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_t *gpio_memory) {
+
+	if (is_GPIO_address(Rn)) {
+		// Rn needs to be shifted to access the emulated physical memory.
+		print_GPIO_access_message(Rn);
+		set_pin_functionality(Rn - 0x20200000, registers[Rd], gpio_memory);
+		return;
+	} else if (Rn == GPIO_clearing) {
+		clear_pin(registers[Rd], gpio_memory);
+		return;
+	} else if (Rn == GPIO_setting) {
+		set_pin(registers[Rd], gpio_memory);
+		return;
+	}
 	// store word to little Endian
+	word_t storeWord = registers[Rd];
 	for (int i = 0; i < 4; i++) {
 		memory[Rn + i] = storeWord;
 		storeWord >>= 8;
@@ -173,6 +208,14 @@ static byte_t get_load_store_bit(byte_t secondByte) {
 
 static byte_t get_shifted_register(byte_t thirdByte) {
 	return get_Second_Nibble(thirdByte);
+}
+
+static byte_t get_Rn (byte_t secondByte) {
+	return secondByte & 0xf;
+}
+
+static byte_t get_Rd (byte_t thirdByte) {
+	return thirdByte >> 4;
 }
 
 static word_t get_offset (byte_t thirdByte, byte_t fourthByte, 
