@@ -32,5 +32,5 @@ enum pin_function get_pin_functionality(int pin_number, byte_t *memory);
 
 void set_pin_functionality(word_t location, word_t value, byte_t *memory);
 
-void clear_pin(int pin_number, byte_t *memory);
-void set_pin(int pin_number, byte_t *memory);
+void clear_pin(word_t shifted_pin, byte_t *memory);
+void set_pin(word_t shifted_pin, byte_t *memory);

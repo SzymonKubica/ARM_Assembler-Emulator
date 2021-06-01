@@ -7,7 +7,7 @@ bool is_GPIO_address(word_t Rn) {
 void print_GPIO_access_message(word_t Rn) {
 	switch (Rn) {
 		case GPIO_00_09:
-			printf("One GPIO pin from 00 to 09 has been accessed\n");
+			printf("One GPIO pin from 0 to 9 has been accessed\n");
 			break;
 		case GPIO_10_19:
 			printf("One GPIO pin from 10 to 19 has been accessed\n");
@@ -23,7 +23,7 @@ enum pin_function from_binary_to_pin_function(nibble_t code) {
 		case 0: 
 			return input;
 		case 1: 
-			return input;
+			return output;
 		default:
 			// Shold never be reached.
 			return -1;
@@ -84,25 +84,27 @@ enum pin_function get_pin_functionality(int pin_number, byte_t *memory) {
 }
 
 void set_pin_functionality(word_t location, word_t value, byte_t *memory) {
-	memory[location] |= value;
+  word_t past_value = read_word_from_memory_at(location, memory);
+	write_word_to_memory_at(location, (past_value | value), memory);
 }
 
-void clear_pin(int pin_number, byte_t *memory) {
-	assert(get_pin_functionality(pin_number, memory) == output);
+void clear_pin(word_t shifted_pin, byte_t *memory) {
+	// TODO: fix the assertions.
+	//assert(get_pin_functionality(pin_number, memory) == output);
 	
 	// Setting a bit in clear area corresponding to the pin number clears the pin.
-	write_word_to_memory_at(GPIO_clearing_shifted, (1 << pin_number), memory);
+	write_word_to_memory_at(GPIO_clearing_shifted, shifted_pin, memory);
 
-	printf("PIN OFF");
+	printf("PIN OFF\n");
 }
 
-void set_pin(int pin_number, byte_t *memory) {
-	assert(get_pin_functionality(pin_number, memory) == output);
+void set_pin(word_t shifted_pin, byte_t *memory) {
+	//assert(get_pin_functionality(pin_number, memory) == output);
 	
 	// Setting a bit in set area corresponding to the pin number sets the pin.
-	write_word_to_memory_at(GPIO_setting_shifted, (1 << pin_number), memory);
+	write_word_to_memory_at(GPIO_setting_shifted, shifted_pin, memory);
 
-	printf("PIN ON");
+	printf("PIN ON\n");
 }
 
 

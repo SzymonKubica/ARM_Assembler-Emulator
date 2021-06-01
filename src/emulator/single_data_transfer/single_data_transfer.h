@@ -8,4 +8,5 @@
 void execute_single_data_transfer(
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t* memory);
+		byte_t *memory,
+		byte_t *gpio_memory);

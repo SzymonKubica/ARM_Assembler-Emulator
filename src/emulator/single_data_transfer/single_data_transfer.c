@@ -15,22 +15,36 @@
 void execute_single_data_transfer (
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t *memory);
+		byte_t *memory,
+		byte_t *gpio_memory);
 
 // Helper functions for execute_single_data_transfer.
 // Declared in descending level of abstraction.
 static void execute_pre_indexing(
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t *memory);
+		byte_t *memory,
+		byte_t *gpio_memory);
 
 static void execute_post_indexing(
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t *memory);
+		byte_t *memory,
+		byte_t *gpio_memory);
 
-static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory);
-static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory);
+static void load(
+		word_t Rn, 
+		byte_t Rd, 
+		word_t *registers, 
+		byte_t *memory,
+		byte_t *gpio_memory);
+
+static void store(
+		word_t Rn, 
+		byte_t Rd, 
+		word_t *registers, 
+		byte_t *memory,
+		byte_t *gpio_memory);
 
 // Functions applying an offset to the base register.
 static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers);
@@ -53,15 +67,16 @@ static word_t get_offset(
 void execute_single_data_transfer (
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t *memory) 
+		byte_t *memory,
+		byte_t *gpio_memory) 
 {
 	if (get_pre_post_indexing_bit(firstByte[0])) {
 
-		execute_pre_indexing(firstByte, registers, memory);
+		execute_pre_indexing(firstByte, registers, memory, gpio_memory);
 
 	} else {
 
-		execute_post_indexing(firstByte, registers, memory);
+		execute_post_indexing(firstByte, registers, memory, gpio_memory);
 
 	}
 }
@@ -70,15 +85,16 @@ void execute_single_data_transfer (
 static void execute_pre_indexing(
 		byte_t *firstByte, 
 		word_t *registers, 
-		byte_t *memory) 
+		byte_t *memory,
+		byte_t *gpio_memory) 
 {
 	byte_t Rn_register = get_Rn(firstByte[1]);
 	word_t Rn = apply_offset(Rn_register, firstByte, registers);
 
 	if (get_load_store_bit(firstByte[1])) {
-		load(Rn, get_Rd(firstByte[2]), registers, memory);
+		load(Rn, get_Rd(firstByte[2]), registers, memory, gpio_memory);
 	} else {
-		store(Rn, get_Rd(firstByte[2]), registers, memory);
+		store(Rn, get_Rd(firstByte[2]), registers, memory, gpio_memory);
 	}
 }
 
@@ -86,27 +102,24 @@ static void execute_pre_indexing(
 static void execute_post_indexing(
 		byte_t *firstByte, 
 		word_t *registers,
-		byte_t *memory) 
+		byte_t *memory,
+		byte_t *gpio_memory) 
 {
 	byte_t Rn_register = get_Rn(firstByte[1]);
 	word_t Rn = registers[Rn_register];
 
 	if (get_load_store_bit(firstByte[1])) {
-		load(Rn, get_Rd(firstByte[2]), registers, memory);
+		load(Rn, get_Rd(firstByte[2]), registers, memory, gpio_memory);
 	} else {
-		store(Rn, get_Rd(firstByte[2]), registers, memory);
+		store(Rn, get_Rd(firstByte[2]), registers, memory, gpio_memory);
 	}
 
 	registers[Rn_register] = apply_offset(Rn_register, firstByte, registers);
 }
 
-static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
+static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_t *gpio_memory) {
 	if (is_GPIO_address(Rn)) {
 		print_GPIO_access_message(Rn);	
-		// There are 44 bytes needed to accomodate memory up to 0x202001c + 4 bytes
-		byte_t *gpio_memory = malloc(44);
-
-		initialise_GPIO_pins(gpio_memory);
 
 		// Spec required to assume that the value of memory at GPIO address
 		// is the address itself.
@@ -125,16 +138,18 @@ static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 	registers[Rd] = loadWord;
 }
 
-static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
+static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_t *gpio_memory) {
 
 	if (is_GPIO_address(Rn)) {
-		set_pin_functionality(Rn, registers[Rd], memory);
+		// Rn needs to be shifted to access the emulated physical memory.
+		print_GPIO_access_message(Rn);
+		set_pin_functionality(Rn - 0x20200000, registers[Rd], gpio_memory);
 		return;
 	} else if (Rn == GPIO_clearing) {
-		clear_pin(registers[Rd], memory);
+		clear_pin(registers[Rd], gpio_memory);
 		return;
 	} else if (Rn == GPIO_setting) {
-		set_pin(registers[Rd], memory);
+		set_pin(registers[Rd], gpio_memory);
 		return;
 	}
 	// store word to little Endian
