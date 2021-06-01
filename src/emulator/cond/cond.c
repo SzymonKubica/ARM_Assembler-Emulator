@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include <stdio.h>
-#include "binaryString.h"
 #include "cond.h"
 #include "../../defns.h"
 
@@ -25,7 +24,6 @@ byte_t z_set (byte_t NZCV) {
 }
 
 byte_t n_equal_v (byte_t NZCV) {
-	// printf("%x\n", NZCV);
 	return (NZCV & 1) == ((NZCV >> 3) & 1) ;
 }
 

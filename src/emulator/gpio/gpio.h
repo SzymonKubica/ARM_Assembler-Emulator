@@ -22,13 +22,9 @@ void print_GPIO_access_message(word_t Rn);
 
 enum pin_function {input, output};
 
-enum pin_function from_binary_to_pin_function(nibble_t code);
-
 void initialise_GPIO_pins(byte_t *memory);
 
-enum pin_function get_pin_functionality(int pin_number, byte_t *memory);
-
-void set_pin_functionality(word_t location, word_t value, byte_t *memory);
+void set_pin_function(word_t location, word_t value, byte_t *memory);
 
 void clear_pin(word_t shifted_pin, byte_t *memory);
 void set_pin(word_t shifted_pin, byte_t *memory);

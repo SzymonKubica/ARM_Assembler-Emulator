@@ -140,9 +140,10 @@ static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_t
 static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_t *gpio_memory) {
 
 	if (is_GPIO_address(Rn)) {
-		// Rn needs to be shifted to access the emulated physical memory.
 		print_GPIO_access_message(Rn);
-		set_pin_functionality(Rn - 0x20200000, registers[Rd], gpio_memory);
+
+		// Rn needs to be shifted to access the emulated physical memory.
+		set_pin_function(Rn - 0x20200000, registers[Rd], gpio_memory);
 		return;
 	} else if (Rn == GPIO_clearing) {
 		clear_pin(registers[Rd], gpio_memory);
