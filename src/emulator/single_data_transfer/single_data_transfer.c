@@ -5,10 +5,7 @@
 #include "../../defns.h"
 #include "binaryString.h"
 #include "common.h"
-
-#define GPIO_20_29 0x20200008
-#define GPIO_10_19 0x20200004
-#define GPIO_00_09 0x20200000
+#include "gpio.h"
 
 /*
  * Single data transfer module: implementation.
@@ -101,24 +98,6 @@ static void execute_post_indexing(
 	}
 
 	registers[Rn_register] = apply_offset(Rn_register, firstByte, registers);
-}
-
-static bool is_GPIO_address(word_t Rn) {
-	return (Rn == GPIO_00_09) || (Rn == GPIO_10_19) || (Rn == GPIO_20_29);
-}
-
-static void print_GPIO_access_message(word_t Rn) {
-	switch (Rn) {
-		case GPIO_00_09:
-			printf("One GPIO pin from 00 to 09 has been accessed\n");
-			break;
-		case GPIO_10_19:
-			printf("One GPIO pin from 10 to 19 has been accessed\n");
-			break;
-		case GPIO_20_29:
-			printf("One GPIO pin from 20 to 29 has been accessed\n");
-			break;
-	}
 }
 
 static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
