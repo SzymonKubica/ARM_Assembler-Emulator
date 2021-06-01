@@ -1,20 +1,19 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
+
 #include "../../defns.h"
 #include "binaryString.h"
 #include "common.h"
 
-static byte_t get_Rn (byte_t secondByte) {
-	return secondByte & 0xf;
-}
-
-static byte_t get_Rd (byte_t thirdByte) {
-	return thirdByte >> 4;
-}
+#define GPIO_20_29 0x20200008
+#define GPIO_10_19 0x20200004
+#define GPIO_00_09 0x20200000
 
 /*
  * Single data transfer module: implementation.
  */ 
+
 // Execute function:
 void execute_single_data_transfer (
 		byte_t *firstByte, 
@@ -45,6 +44,8 @@ static byte_t get_pre_post_indexing_bit(byte_t firstByte);
 static byte_t get_up_bit(byte_t secondByte);
 static byte_t get_load_store_bit(byte_t secondByte);
 static byte_t get_shifted_register(byte_t thirdByte);
+static byte_t get_Rn (byte_t secondByte);
+static byte_t get_Rd (byte_t thirdByte);
 static word_t get_offset(
 		byte_t thirdByte, 
 		byte_t fourthByte, 
@@ -102,9 +103,34 @@ static void execute_post_indexing(
 	registers[Rn_register] = apply_offset(Rn_register, firstByte, registers);
 }
 
+static bool is_GPIO_address(word_t Rn) {
+	return (Rn == GPIO_00_09) || (Rn == GPIO_10_19) || (Rn == GPIO_20_29);
+}
+
+static void print_GPIO_access_message(word_t Rn) {
+	switch (Rn) {
+		case GPIO_00_09:
+			printf("One GPIO pin from 00 to 09 has been accessed\n");
+			break;
+		case GPIO_10_19:
+			printf("One GPIO pin from 10 to 19 has been accessed\n");
+			break;
+		case GPIO_20_29:
+			printf("One GPIO pin from 20 to 29 has been accessed\n");
+			break;
+	}
+}
+
 static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory) {
 	word_t loadWord = 0;
-	if (Rn < 0 || 65536 < Rn) {
+	if (is_GPIO_address(Rn)) {
+		print_GPIO_access_message(Rn);	
+
+		// Spec required to assume that the value of memory at GPIO address
+		// is the address itself.
+		registers[Rd] = Rn;
+		return;
+	} else if (Rn < 0 || 65536 < Rn) {
 		printf("Error: Out of bounds memory access at address 0x%08x\n", Rn);
 		return;
 	}
@@ -173,6 +199,14 @@ static byte_t get_load_store_bit(byte_t secondByte) {
 
 static byte_t get_shifted_register(byte_t thirdByte) {
 	return get_Second_Nibble(thirdByte);
+}
+
+static byte_t get_Rn (byte_t secondByte) {
+	return secondByte & 0xf;
+}
+
+static byte_t get_Rd (byte_t thirdByte) {
+	return thirdByte >> 4;
 }
 
 static word_t get_offset (byte_t thirdByte, byte_t fourthByte, 
