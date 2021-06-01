@@ -11,7 +11,7 @@
  */ 
 
 // Execute function:
-void execute_single_data_transfer (
+void execute_single_data_transfer(
 		byte_t *firstByte, 
 		word_t *registers, 
 		byte_t *memory,
@@ -49,13 +49,13 @@ static void store(
 static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers);
 
 // Decoding functions for reading 32b instruction.
-static byte_t immediate_operand (byte_t firstByte);
+static byte_t immediate_operand(byte_t firstByte);
 static byte_t get_pre_post_indexing_bit(byte_t firstByte);
 static byte_t get_up_bit(byte_t secondByte);
 static byte_t get_load_store_bit(byte_t secondByte);
 static byte_t get_shifted_register(byte_t thirdByte);
-static byte_t get_Rn (byte_t secondByte);
-static byte_t get_Rd (byte_t thirdByte);
+static byte_t get_Rn(byte_t secondByte);
+static byte_t get_Rd(byte_t thirdByte);
 static word_t get_offset(
 		byte_t thirdByte, 
 		byte_t fourthByte, 
@@ -63,7 +63,7 @@ static word_t get_offset(
 		word_t * registers);
 
 // Performs single data transfer instruction execution. 
-void execute_single_data_transfer (
+void execute_single_data_transfer(
 		byte_t *firstByte, 
 		word_t *registers, 
 		byte_t *memory,
@@ -159,16 +159,13 @@ static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_
 		storeWord >>= 8;
 	}
 	// registers[Rd] = loadWord;
-
 	// memory[registers[Rd]] = registers[Rn];
 }
 
 // Used in case of pre-indexing. Offset is applied and new register address is returned.
-// The original register remains unchanged.
 static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers) {
 	// Offset is added when Up bit is set.
 	word_t r = registers[Rn];
-
 	if (get_up_bit(firstByte[1])) {
 
 		r += get_offset(
@@ -190,7 +187,7 @@ static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers) {
 }
 
 
-static byte_t immediate_operand (byte_t firstByte) {
+static byte_t immediate_operand(byte_t firstByte) {
 	return (firstByte & 2) >> 1;
 }
 
@@ -210,17 +207,16 @@ static byte_t get_shifted_register(byte_t thirdByte) {
 	return get_Second_Nibble(thirdByte);
 }
 
-static byte_t get_Rn (byte_t secondByte) {
+static byte_t get_Rn(byte_t secondByte) {
 	return secondByte & 0xf;
 }
 
-static byte_t get_Rd (byte_t thirdByte) {
+static byte_t get_Rd(byte_t thirdByte) {
 	return thirdByte >> 4;
 }
 
-static word_t get_offset (byte_t thirdByte, byte_t fourthByte, 
+static word_t get_offset(byte_t thirdByte, byte_t fourthByte, 
 		byte_t immediate_offset, word_t *registers) {
-	
 	bit_t carry = 0;
 	// Operand2 immediate value
 	if (!(immediate_offset)) {

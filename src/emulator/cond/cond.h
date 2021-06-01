@@ -3,9 +3,7 @@
 
 #include "../../defns.h"
 
-// byte_t getCond (byte_t cond);
-
-byte_t checkCond (byte_t cond, word_t CPSR);
+byte_t checkCond(byte_t cond, word_t CPSR);
 
 #endif
 

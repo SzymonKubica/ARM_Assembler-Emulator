@@ -27,4 +27,5 @@ void initialise_GPIO_pins(byte_t *memory);
 void set_pin_function(word_t location, word_t value, byte_t *memory);
 
 void clear_pin(word_t shifted_pin, byte_t *memory);
+
 void set_pin(word_t shifted_pin, byte_t *memory);

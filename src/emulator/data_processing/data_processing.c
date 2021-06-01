@@ -19,27 +19,27 @@
 #define asr 2 //0b10
 #define ror 3 //0b11
 
-static bit_t get_immediate_operand (byte_t firstByte) {
+static bit_t get_immediate_operand(byte_t firstByte) {
 	return (firstByte & 2) >> 1;
 }
 
-static nibble_t get_OpCode (byte_t firstByte, byte_t secondByte) {
+static nibble_t get_OpCode(byte_t firstByte, byte_t secondByte) {
 	return ((firstByte & 1) << 3) | ((secondByte) >> 5);
 }
 
-static nibble_t get_Rn (byte_t secondByte) {
+static nibble_t get_Rn(byte_t secondByte) {
 	return secondByte & readBinary("1111");
 }
 
-static nibble_t get_Rd (byte_t thirdByte) {
+static nibble_t get_Rd(byte_t thirdByte) {
 	return thirdByte >> 4;
 }
 
-static nibble_t get_S (byte_t secondByte) {
+static nibble_t get_S(byte_t secondByte) {
 	return get_First_Nibble(secondByte) & 1;
 }
 
-static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
+static word_t get_Operand2(byte_t thirdByte, byte_t fourthByte, 
 		bit_t immediate_operand, word_t *registers, bit_t *carry) {
 
 	// Operand2 immediate value
@@ -75,11 +75,12 @@ static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte,
 	}
 }
 
-static void set_CPSR (word_t result, word_t *cpsr, bit_t logical_op, bit_t carry) {
+static void set_CPSR(word_t result, word_t *cpsr, bit_t logical_op, bit_t carry) {
 	// Set N-bit
 	*cpsr &= 0x7fffffff;
 	*cpsr |= ((result >> 30) & 1) << 31;
-	// Set Z-bit -- DOUBLE CHECK if-and-only-if on page VI of spec
+	
+	// Set Z-bit 
 	if(!result) {
 		*cpsr |= 0x40000000;
 	} else {
@@ -89,12 +90,10 @@ static void set_CPSR (word_t result, word_t *cpsr, bit_t logical_op, bit_t carry
 	// Set C-bit to 0
 	*cpsr &= 0xdfffffff;
 	*cpsr |= (carry << 29);
-
 }
 
 
-void execute_data_processing (byte_t *firstByte, word_t *registers) {
-
+void execute_data_processing(byte_t *firstByte, word_t *registers) {
 	bit_t carry = 0;
 	word_t operand2 
 		= get_Operand2(firstByte[2], firstByte[3], 

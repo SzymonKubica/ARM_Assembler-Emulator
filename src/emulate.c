@@ -15,10 +15,10 @@
 #define CPSR 16
 #define memorySize 65536
 
-enum instruction{data_processing, multiply, single_data_transfer, branch};
+enum instruction {data_processing, multiply, single_data_transfer, branch};
 
 // Parse file into fileArray and update num words.
-void parse_file (byte_t *fileArray, const char *arg, int *words) {
+void parse_file(byte_t *fileArray, const char *arg, int *words) {
 	
 	FILE *file;
 	file = fopen(arg,"rb");
@@ -28,21 +28,17 @@ void parse_file (byte_t *fileArray, const char *arg, int *words) {
 		byte_t c = fgetc(file);
 
 		for (int i = 0; !feof(file); i++) {
-			// printf("%x ", c);
-
 			if (i % 4 == 0) {
 				(* words)++;
 			}
-
 			fileArray[i] = c;
 			c = fgetc(file);
-		
 		}
 		fclose(file); 
 	}
 }
 
-enum instruction decode (byte_t * word) {
+enum instruction decode(byte_t * word) {
 	// code - bit 27 26
 	byte_t code = (word[0] >> 2) & 3;
 
@@ -63,26 +59,26 @@ enum instruction decode (byte_t * word) {
 	}
 }
 
-void execute (byte_t *word, word_t *registers, byte_t *memory, byte_t *gpio_memory) {
-	enum instruction code = decode (word);
+void execute(byte_t *word, word_t *registers, byte_t *memory, byte_t *gpio_memory) {
+	enum instruction code = decode(word);
 	switch (code) {
 		case data_processing:
-			execute_data_processing (word, registers);
+			execute_data_processing(word, registers);
 			break;
 		case multiply:
-			execute_multiply (word, registers);
+			execute_multiply(word, registers);
 			break;
 		case single_data_transfer:
-			execute_single_data_transfer (word, registers, memory, gpio_memory);
+			execute_single_data_transfer(word, registers, memory, gpio_memory);
 			break;
 		case branch:
-			execute_branch (word, registers);
+			execute_branch(word, registers);
 			break;
 	}
 
 }
 
-void reverse_instruction (byte_t *fetched_Instruction, byte_t *decoded_Instruction) {
+void reverse_instruction(byte_t *fetched_Instruction, byte_t *decoded_Instruction) {
 	for (int i = 0; i< 4; i++) {
 		decoded_Instruction[i] = fetched_Instruction[3-i];
 	}
@@ -101,7 +97,7 @@ int main(int argc, char **argv) {
 
 	int num_words = 0;
 
-	parse_file (memory, argv[1], &num_words);
+	parse_file(memory, argv[1], &num_words);
 
 
 	// 3 stage pipeline
@@ -113,7 +109,7 @@ int main(int argc, char **argv) {
 	fetched_Instruction = memory;
 	registers[PC] += 4;
 
-	reverse_instruction (fetched_Instruction, decoded_Instruction);
+	reverse_instruction(fetched_Instruction, decoded_Instruction);
 	int n = registers[PC];
 	fetched_Instruction = memory + n;
 	registers[PC] += 4;
@@ -137,7 +133,7 @@ int main(int argc, char **argv) {
 
 		if (!isBranch) { 
 			// Decode the instruction.
-			reverse_instruction (fetched_Instruction, decoded_Instruction);
+			reverse_instruction(fetched_Instruction, decoded_Instruction);
 
 			int n = registers[PC];
 			fetched_Instruction = memory + n;
@@ -151,7 +147,7 @@ int main(int argc, char **argv) {
 			fetched_Instruction = memory + n;
 
 			// Decode the instruction.
-			reverse_instruction (fetched_Instruction, decoded_Instruction);
+			reverse_instruction(fetched_Instruction, decoded_Instruction);
 
 			registers[PC] += 4;
 
@@ -163,7 +159,7 @@ int main(int argc, char **argv) {
 		}
 	}
 	// Print Output  
-	// print program state
+	// Print program state
 	printf("Registers:\n"); 
 	for (int i = 0; i < 13; i++) {
 		printf("$%-3d: %10d (0x%08x)\n", i, registers[i],registers[i]);
@@ -186,7 +182,6 @@ int main(int argc, char **argv) {
 		}
 		printf ("\n");
 	}
-	
 	free(memory);
   	return EXIT_SUCCESS;
 }

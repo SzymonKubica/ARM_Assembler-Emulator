@@ -4,15 +4,15 @@
 #include "../../defns.h"
 
 
-byte_t get_First_Nibble (byte_t byte) {
+byte_t get_First_Nibble(byte_t byte) {
 	return byte >> 4; 
 }
 
-byte_t get_Second_Nibble (byte_t byte) {
+byte_t get_Second_Nibble(byte_t byte) {
 	return byte & 0xf;
 }
 
-word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word, bit_t *carry) {
+word_t shifter(byte_t shiftType, byte_t shiftAmount, word_t word, bit_t *carry) {
 	if (shiftAmount == 0) {
 		return word;
 	}
@@ -32,14 +32,14 @@ word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word, bit_t *carry)
 		default: // ERROR: Should never be reached
 			return -1;
 	}
-} 
-
+}
 
 /*
- * binary string module: implementation.
+ * Binary string module: implementation.
  */
 
 static char * deleteSpaces(char *str);
+
 static int countSpaces(char *str);
 
 /*
@@ -78,7 +78,7 @@ word_t readBinaryWord(char *str) {
 	return word;
 }
 
-static char * deleteSpaces(char *str) {
+static char *deleteSpaces(char *str) {
 	char *str2 = malloc(strlen(str) - countSpaces(str));
 	char *ptr = str2;
 	for (; *str != '\0'; str++) {

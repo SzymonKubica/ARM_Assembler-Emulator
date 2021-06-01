@@ -7,6 +7,6 @@
  * Data Processing Instruction 
  */
 
-void execute_data_processing (byte_t *firstByte, word_t *registers); 
+void execute_data_processing(byte_t *firstByte, word_t *registers); 
 
 #endif
