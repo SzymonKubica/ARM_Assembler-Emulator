@@ -19,7 +19,7 @@ static int get_sign_extended_offset(word_t offset) {
 
 		// If the most significant bit is non-zero.
 		// Copy the leftmost bit (1) 6 times.
-		word_t filler = readBinaryWord("1111 1100 0000 0000 0000 0000 0000 0000");
+		word_t filler = parse_binary_word("1111 1100 0000 0000 0000 0000 0000 0000");
 		return (int) (filler | offset);
 	} else {
 

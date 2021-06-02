@@ -48,7 +48,7 @@ static int countSpaces(char *str);
  * Pre: the number is less than or equal 8 bits long.
  */
 
-byte_t readBinary(char *str) {
+byte_t parse_binary(char *str) {
 	byte_t byte = 0x0;
 	str = deleteSpaces(str);
 	for (int i = strlen(str), j = -1; i >= 0; i--, j++) {
@@ -66,7 +66,7 @@ byte_t readBinary(char *str) {
  * Pre: the number is less than or equal 32 bits long.
  */
 
-word_t readBinaryWord(char *str) {
+word_t parse_binary_word(char *str) {
 	word_t word = 0x0;
 	str = deleteSpaces(str);
 	for (int i = strlen(str), j = -1; i >= 0; i--, j++) {

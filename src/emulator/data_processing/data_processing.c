@@ -28,7 +28,7 @@ static nibble_t get_OpCode(byte_t firstByte, byte_t secondByte) {
 }
 
 static nibble_t get_Rn(byte_t secondByte) {
-	return secondByte & readBinary("1111");
+	return secondByte & parse_binary("1111");
 }
 
 static nibble_t get_Rd(byte_t thirdByte) {
@@ -56,7 +56,7 @@ static word_t get_Operand2(byte_t thirdByte, byte_t fourthByte,
 		// first nibble of the fourthByte.
 
 		byte_t shift = ((thirdByte & 0xf) << 4) | (fourthByte >> 4);
-		nibble_t shiftType = (shift & readBinary("110")) >> 1;
+		nibble_t shiftType = (shift & parse_binary("110")) >> 1;
 
 		word_t wordToShift = registers[Rm];
 

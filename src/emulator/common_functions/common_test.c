@@ -9,27 +9,27 @@ void testcond(bool condition, char *testname) {
 }
 
 void test1() {
-	// Test 1: testing readBinary.
-	byte_t byte = readBinary("1111");
-	testcond (byte == 15, "readBinary");
+	// Test 1: testing parse_binary.
+	byte_t byte = parse_binary("1111");
+	testcond (byte == 15, "parse_binary");
 }
 
 void test2() {
-	// Test 2: testing readBinary with spaces.
-	byte_t byte = readBinary("1001 0000");
-	testcond (byte == 144, "readBinary with spaces");
+	// Test 2: testing parse_binary with spaces.
+	byte_t byte = parse_binary("1001 0000");
+	testcond (byte == 144, "parse_binary with spaces");
 }
 
 void test3() {
-	// Test3: testing readBinaryWord.
-	word_t word1 = readBinaryWord("100000000000");
-	testcond (word1 == 2048, "readBinaryWord");
+	// Test3: testing parse_binary_word.
+	word_t word1 = parse_binary_word("100000000000");
+	testcond (word1 == 2048, "parse_binary_word");
 }
 
 void test4() {
-	// Test4: testing readBinaryWord with spaces.
-	word_t word1 = readBinaryWord("1000 0000 0000");
-	testcond (word1 == 2048, "readBinaryWord with spaces");
+	// Test4: testing parse_binary_word with spaces.
+	word_t word1 = parse_binary_word("1000 0000 0000");
+	testcond (word1 == 2048, "parse_binary_word with spaces");
 }
 
 int main (void) {
