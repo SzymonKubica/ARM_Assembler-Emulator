@@ -213,11 +213,11 @@ static byte_t get_pre_post_indexing_bit(byte_t firstByte) {
 }
 
 static byte_t get_up_bit(byte_t secondByte) {
-	return secondByte & 0x80;
+	return secondByte & 0x80; // 10000000
 }
 
 static byte_t get_load_store_bit(byte_t secondByte) {
-	return secondByte & parse_binary("00010000");
+	return secondByte & 0x10; // 00010000
 }
 
 static byte_t get_shifted_register(byte_t thirdByte) {
@@ -225,7 +225,7 @@ static byte_t get_shifted_register(byte_t thirdByte) {
 }
 
 static byte_t get_Rn(byte_t secondByte) {
-	return secondByte & 0xf;
+	return secondByte & 0xf; // 1111
 }
 
 static byte_t get_Rd(byte_t thirdByte) {
@@ -237,19 +237,19 @@ static word_t get_offset(byte_t thirdByte, byte_t fourthByte,
 	bit_t carry = 0;
 	// Operand2: immediate value
 	if (!(immediate_offset)) {
-		byte_t rotation = (thirdByte & parse_binary("1111")) << 1; 
+		byte_t rotation = (thirdByte & 0xf /* 1111 */) << 1; 
 		return shifter (3, rotation, fourthByte, &carry);
 	}
 
 	// Operand2: register
 	else {		
-		byte_t Rm = fourthByte & parse_binary("1111");
+		byte_t Rm = fourthByte & 0xf /* 1111 */;
 
 		// The shift is specified by the second half of the thirdByte and the 
 		// first half of the fourthByte.
 
-		byte_t shift = ((thirdByte & parse_binary("1111")) << 4) | (fourthByte >> 4);
-		byte_t shiftType = (shift & parse_binary("110")) >> 1;
+		byte_t shift = ((thirdByte & 0xf /* 1111 */) << 4) | (fourthByte >> 4);
+		byte_t shiftType = (shift & 0x6 /* 0110 */) >> 1;
 
 		word_t wordToShift = registers[Rm];
 

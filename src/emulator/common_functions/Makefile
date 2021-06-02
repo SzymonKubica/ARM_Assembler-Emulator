@@ -13,10 +13,6 @@ clean:
 $(LIB): $(LIBOBJ)
 	ar rcs $(LIB) $(LIBOBJ)
 
-test: all common_test
-
 common.o: common.h ../../defns.h
-common_test: common_test.o common.o
-common_test.o: common.h
 
 

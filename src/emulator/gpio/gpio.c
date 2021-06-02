@@ -89,7 +89,7 @@ static enum pin_function get_pin_function(int pin_number, byte_t *GPIO_memory) {
 	// Each pin has its function specified by 3 bits, 
 	// so we shift 3 times the last digit of pin_number to get to its region.
 	int pin_offset = 3 * (pin_number % 10);
-	word_t mask = parse_binary_word("111") << pin_offset;
+	word_t mask = 0x7 /* 111 */ << pin_offset;
 	word_t pin_range;
 
 	word_t GPIO_addresses[3] = {
