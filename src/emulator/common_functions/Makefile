@@ -2,7 +2,7 @@ CC     = gcc
 CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic 
 LIB    = libcommon.a
 LIBOBJ = common.o
-BUILD  = common_test $(LIB)
+BUILD  = $(LIB)
 
 all: $(BUILD)
 
@@ -12,6 +12,8 @@ clean:
 
 $(LIB): $(LIBOBJ)
 	ar rcs $(LIB) $(LIBOBJ)
+
+test: all common_test
 
 common.o: common.h ../../defns.h
 common_test: common_test.o common.o
