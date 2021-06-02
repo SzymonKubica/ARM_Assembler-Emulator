@@ -3,6 +3,10 @@
 #include "cond.h"
 #include "../../defns.h"
 
+/*
+ * Condition Checking Module: implementation.
+ */ 
+
 #define eq 0
 #define ne 1
 #define ge 10 //0b1010

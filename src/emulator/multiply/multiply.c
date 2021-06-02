@@ -2,6 +2,10 @@
 #include "../../defns.h"
 #include "common.h"
 
+/*
+ * Multiply Instruction Module: implementation.
+ */
+
 static nibble_t get_Rn_multiply(byte_t thirdByte) {
 	return get_First_Nibble(thirdByte); 
 }

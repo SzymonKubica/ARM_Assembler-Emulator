@@ -59,7 +59,7 @@ enum instruction decode(byte_t * word) {
 	}
 }
 
-void execute(byte_t *word, word_t *registers, byte_t *memory, byte_t *gpio_memory) {
+void execute(byte_t *word, word_t *registers, byte_t *memory, byte_t *GPIO_memory) {
 	enum instruction code = decode(word);
 	switch (code) {
 		case data_processing:
@@ -69,7 +69,7 @@ void execute(byte_t *word, word_t *registers, byte_t *memory, byte_t *gpio_memor
 			execute_multiply(word, registers);
 			break;
 		case single_data_transfer:
-			execute_single_data_transfer(word, registers, memory, gpio_memory);
+			execute_single_data_transfer(word, registers, memory, GPIO_memory);
 			break;
 		case branch:
 			execute_branch(word, registers);
@@ -85,11 +85,14 @@ void reverse_instruction(byte_t *fetched_Instruction, byte_t *decoded_Instructio
 }
 
 int main(int argc, char **argv) {
-	
-	byte_t *memory = malloc(memorySize); // holds entire file
+
+	// holds entire file
+	byte_t *memory = malloc(memorySize); 
 	word_t registers[17];
-	byte_t *gpio_memory = malloc(44);
-	initialise_GPIO_pins(gpio_memory);
+
+	// holds GPIO pins and their clearing and setting regions
+	byte_t *GPIO_memory = malloc(GPIO_memory_size);
+	initialise_GPIO_pins(GPIO_memory);
 
 	for (int i = 0; i < 17; i++){
 		registers[i] = 0;
@@ -125,7 +128,7 @@ int main(int argc, char **argv) {
 		bool isBranch;
 
 		if (checkCond(decoded_Instruction[0], registers[CPSR])) {
-			execute(execute_Instruction, registers, memory, gpio_memory);
+			execute(execute_Instruction, registers, memory, GPIO_memory);
 
 			// Keeps track of whether a branch instruction was executed.
 			isBranch = (branch == decode(execute_Instruction)); 
