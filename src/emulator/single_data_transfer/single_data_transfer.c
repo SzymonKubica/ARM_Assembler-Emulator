@@ -3,16 +3,15 @@
 #include <stdbool.h>
 
 #include "../../defns.h"
-#include "binaryString.h"
 #include "common.h"
 #include "gpio.h"
 
 /*
- * Single data transfer module: implementation.
+ * Single Data Transfer Module: implementation.
  */ 
 
 // Execute function:
-void execute_single_data_transfer (
+void execute_single_data_transfer(
 		byte_t *firstByte, 
 		word_t *registers, 
 		byte_t *memory,
@@ -50,21 +49,30 @@ static void store(
 static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers);
 
 // Decoding functions for reading 32b instruction.
-static byte_t immediate_operand (byte_t firstByte);
+static byte_t immediate_operand(byte_t firstByte);
+
 static byte_t get_pre_post_indexing_bit(byte_t firstByte);
+
 static byte_t get_up_bit(byte_t secondByte);
+
 static byte_t get_load_store_bit(byte_t secondByte);
+
 static byte_t get_shifted_register(byte_t thirdByte);
-static byte_t get_Rn (byte_t secondByte);
-static byte_t get_Rd (byte_t thirdByte);
+
+static byte_t get_Rn(byte_t secondByte);
+
+static byte_t get_Rd(byte_t thirdByte);
+
 static word_t get_offset(
 		byte_t thirdByte, 
 		byte_t fourthByte, 
 		byte_t immediate_offset, 
 		word_t * registers);
 
-// Performs single data transfer instruction execution. 
-void execute_single_data_transfer (
+static void print_out_of_bounds_message(word_t address); 
+
+// Executes single data transfer instruction. 
+void execute_single_data_transfer(
 		byte_t *firstByte, 
 		word_t *registers, 
 		byte_t *memory,
@@ -77,7 +85,6 @@ void execute_single_data_transfer (
 	} else {
 
 		execute_post_indexing(firstByte, registers, memory, gpio_memory);
-
 	}
 }
 
@@ -117,7 +124,13 @@ static void execute_post_indexing(
 	registers[Rn_register] = apply_offset(Rn_register, firstByte, registers);
 }
 
-static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_t *gpio_memory) {
+static void load(
+	word_t Rn,
+	byte_t Rd, 
+	word_t *registers, 
+	byte_t *memory, 
+	byte_t *gpio_memory) 
+{
 	if (is_GPIO_address(Rn)) {
 		print_GPIO_access_message(Rn);	
 
@@ -126,7 +139,7 @@ static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_t
 		registers[Rd] = Rn;
 		return;
 	} else if (Rn < 0 || 65536 < Rn) {
-		printf("Error: Out of bounds memory access at address 0x%08x\n", Rn);
+		print_out_of_bounds_message(Rn);
 		return;
 	}
 	// load entire word at memory[Rn] in Big Endian
@@ -138,12 +151,16 @@ static void load(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_t
 	registers[Rd] = loadWord;
 }
 
-static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_t *gpio_memory) {
-
+static void store(
+	word_t Rn, 
+	byte_t Rd, 
+	word_t *registers, 
+	byte_t *memory, 
+	byte_t *gpio_memory) 
+{
 	if (is_GPIO_address(Rn)) {
-		// Rn needs to be shifted to access the emulated physical memory.
 		print_GPIO_access_message(Rn);
-		set_pin_functionality(Rn - 0x20200000, registers[Rd], gpio_memory);
+		set_pin_function(Rn, registers[Rd], gpio_memory);
 		return;
 	} else if (Rn == GPIO_clearing) {
 		clear_pin(registers[Rd], gpio_memory);
@@ -159,16 +176,13 @@ static void store(word_t Rn, byte_t Rd, word_t *registers, byte_t *memory, byte_
 		storeWord >>= 8;
 	}
 	// registers[Rd] = loadWord;
-
 	// memory[registers[Rd]] = registers[Rn];
 }
 
 // Used in case of pre-indexing. Offset is applied and new register address is returned.
-// The original register remains unchanged.
 static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers) {
 	// Offset is added when Up bit is set.
 	word_t r = registers[Rn];
-
 	if (get_up_bit(firstByte[1])) {
 
 		r += get_offset(
@@ -190,7 +204,7 @@ static word_t apply_offset(byte_t Rn, byte_t *firstByte, word_t *registers) {
 }
 
 
-static byte_t immediate_operand (byte_t firstByte) {
+static byte_t immediate_operand(byte_t firstByte) {
 	return (firstByte & 2) >> 1;
 }
 
@@ -199,44 +213,43 @@ static byte_t get_pre_post_indexing_bit(byte_t firstByte) {
 }
 
 static byte_t get_up_bit(byte_t secondByte) {
-	return secondByte & 0x80;
+	return secondByte & 0x80; // 10000000
 }
 
 static byte_t get_load_store_bit(byte_t secondByte) {
-	return secondByte & readBinary("00010000");
+	return secondByte & 0x10; // 00010000
 }
 
 static byte_t get_shifted_register(byte_t thirdByte) {
 	return get_Second_Nibble(thirdByte);
 }
 
-static byte_t get_Rn (byte_t secondByte) {
-	return secondByte & 0xf;
+static byte_t get_Rn(byte_t secondByte) {
+	return secondByte & 0xf; // 1111
 }
 
-static byte_t get_Rd (byte_t thirdByte) {
+static byte_t get_Rd(byte_t thirdByte) {
 	return thirdByte >> 4;
 }
 
-static word_t get_offset (byte_t thirdByte, byte_t fourthByte, 
+static word_t get_offset(byte_t thirdByte, byte_t fourthByte, 
 		byte_t immediate_offset, word_t *registers) {
-	
 	bit_t carry = 0;
-	// Operand2 immediate value
+	// Operand2: immediate value
 	if (!(immediate_offset)) {
-		byte_t rotation = (thirdByte & readBinary("1111")) << 1; 
+		byte_t rotation = (thirdByte & 0xf /* 1111 */) << 1; 
 		return shifter (3, rotation, fourthByte, &carry);
 	}
 
-	// Operand2 register
+	// Operand2: register
 	else {		
-		byte_t Rm = fourthByte & readBinary("1111");
+		byte_t Rm = fourthByte & 0xf /* 1111 */;
 
 		// The shift is specified by the second half of the thirdByte and the 
 		// first half of the fourthByte.
 
-		byte_t shift = ((thirdByte & readBinary("1111")) << 4) | (fourthByte >> 4);
-		byte_t shiftType = (shift & readBinary("110")) >> 1;
+		byte_t shift = ((thirdByte & 0xf /* 1111 */) << 4) | (fourthByte >> 4);
+		byte_t shiftType = (shift & 0x6 /* 0110 */) >> 1;
 
 		word_t wordToShift = registers[Rm];
 
@@ -250,4 +263,8 @@ static word_t get_offset (byte_t thirdByte, byte_t fourthByte,
 			return shifter (shiftType, registers[Rs], wordToShift, &carry);
 		}
 	}
+}
+
+static void print_out_of_bounds_message(word_t address) {
+	printf("Error: Out of bounds memory access at address 0x%08x\n", address);
 }

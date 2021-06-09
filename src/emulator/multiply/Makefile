@@ -1,6 +1,6 @@
 CC     = gcc
-CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../../lib -I../common_functions
-LDLIBS = -L../../lib -lbinaryString -L../common_functions -lcommon
+CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../common_functions
+LDLIBS = -L../common_functions -lcommon
 LIB    = libmultiply.a
 LIBOBJ = multiply.o
 BUILD  = $(LIB)

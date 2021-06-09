@@ -1,8 +1,11 @@
 #include <stdbool.h>
 #include <stdio.h>
-#include "binaryString.h"
 #include "cond.h"
 #include "../../defns.h"
+
+/*
+ * Condition Checking Module: implementation.
+ */ 
 
 #define eq 0
 #define ne 1
@@ -12,24 +15,23 @@
 #define le 13 //0b1101
 #define al 14 //0b1110
 
-byte_t getCond (byte_t c) {
+byte_t getCond(byte_t c) {
 	return c >> 4;
 }
 
-byte_t get_NZCV (word_t CPSR) {
+byte_t get_NZCV(word_t CPSR) {
 	return CPSR >> 28;
 }
 
-byte_t z_set (byte_t NZCV) {
+byte_t z_set(byte_t NZCV) {
 	return NZCV & (1 << 2);
 }
 
-byte_t n_equal_v (byte_t NZCV) {
-	// printf("%x\n", NZCV);
+byte_t n_equal_v(byte_t NZCV) {
 	return (NZCV & 1) == ((NZCV >> 3) & 1) ;
 }
 
-byte_t checkCond (byte_t byte, word_t CPSR) {
+byte_t checkCond(byte_t byte, word_t CPSR) {
 	
 	byte_t NZCV = get_NZCV(CPSR);
 
@@ -51,5 +53,4 @@ byte_t checkCond (byte_t byte, word_t CPSR) {
 		default:
 			return 0;
 	}
-
 }

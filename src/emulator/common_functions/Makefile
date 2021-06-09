@@ -1,14 +1,11 @@
 CC     = gcc
-CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../../lib
-LDLIBS = -L../../lib -lbinaryString
+CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic 
 LIB    = libcommon.a
 LIBOBJ = common.o
-BUILD  = libs $(LIB)
+BUILD  = $(LIB)
 
 all: $(BUILD)
 
-libs: 
-	cd ../../lib; make
 
 clean: 
 	/bin/rm -f $(BUILD) *.o core
@@ -16,6 +13,6 @@ clean:
 $(LIB): $(LIBOBJ)
 	ar rcs $(LIB) $(LIBOBJ)
 
-common.o: common.h
+common.o: common.h ../../defns.h
 
 

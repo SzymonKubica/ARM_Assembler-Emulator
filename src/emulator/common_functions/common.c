@@ -1,17 +1,18 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "../../defns.h"
-#include "binaryString.h"
 
 
-byte_t get_First_Nibble (byte_t byte) {
+byte_t get_First_Nibble(byte_t byte) {
 	return byte >> 4; 
 }
 
-byte_t get_Second_Nibble (byte_t byte) {
-	return byte & readBinary("1111");
+byte_t get_Second_Nibble(byte_t byte) {
+	return byte & 0xf;
 }
 
-word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word, bit_t *carry) {
+word_t shifter(byte_t shiftType, byte_t shiftAmount, word_t word, bit_t *carry) {
 	if (shiftAmount == 0) {
 		return word;
 	}
@@ -31,4 +32,5 @@ word_t shifter (byte_t shiftType, byte_t shiftAmount, word_t word, bit_t *carry)
 		default: // ERROR: Should never be reached
 			return -1;
 	}
-} 
+}
+

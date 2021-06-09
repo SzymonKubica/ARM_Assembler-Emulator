@@ -7,6 +7,6 @@
  * Execute Branch Instructions
  */
 
-void execute_branch (byte_t *firstByte, word_t *registers);
+void execute_branch(byte_t *firstByte, word_t *registers);
 
 #endif

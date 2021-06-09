@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "../../defns.h"
-#include "binaryString.h"
 #include "data_processing.h"
 #include "common.h"
 
@@ -20,28 +19,28 @@
 #define asr 2 //0b10
 #define ror 3 //0b11
 
-static byte_t get_immediate_operand (byte_t firstByte) {
+static bit_t get_immediate_operand(byte_t firstByte) {
 	return (firstByte & 2) >> 1;
 }
 
-static byte_t get_OpCode (byte_t firstByte, byte_t secondByte) {
+static nibble_t get_OpCode(byte_t firstByte, byte_t secondByte) {
 	return ((firstByte & 1) << 3) | ((secondByte) >> 5);
 }
 
-static byte_t get_Rn (byte_t secondByte) {
-	return secondByte & readBinary("1111");
+static nibble_t get_Rn(byte_t secondByte) {
+	return secondByte & 0xf /* 1111 */;
 }
 
-static byte_t get_Rd (byte_t thirdByte) {
+static nibble_t get_Rd(byte_t thirdByte) {
 	return thirdByte >> 4;
 }
 
-static byte_t get_S (byte_t secondByte) {
+static nibble_t get_S(byte_t secondByte) {
 	return get_First_Nibble(secondByte) & 1;
 }
 
-static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte, 
-		byte_t immediate_operand, word_t *registers, bit_t *carry) {
+static word_t get_Operand2(byte_t thirdByte, byte_t fourthByte, 
+		bit_t immediate_operand, word_t *registers, bit_t *carry) {
 
 	// Operand2 immediate value
 	if (immediate_operand) {
@@ -51,37 +50,37 @@ static word_t get_Operand2 (byte_t thirdByte, byte_t fourthByte,
 
 	// Operand2 register
 	else {		
-		byte_t Rm = fourthByte & 0xf;
+		nibble_t Rm = fourthByte & 0xf;
 
-		// The shift is specified by the second half of the thirdByte and the 
-		// first half of the fourthByte.
+		// The shift is specified by the second nibble of the thirdByte and the 
+		// first nibble of the fourthByte.
 
 		byte_t shift = ((thirdByte & 0xf) << 4) | (fourthByte >> 4);
-		byte_t shiftType = (shift & readBinary("110")) >> 1;
+		nibble_t shiftType = (shift & 0x6 /* 110 */) >> 1;
 
 		word_t wordToShift = registers[Rm];
 
-		if (!(shift & 1)) { // Bit 4 is 0: shift by a constant.
+		if (!(shift & 1)) { 
+
+			// Bit 4 is 0: shift by a constant.
 			byte_t integer = shift >> 3;
 			return shifter (shiftType, integer, wordToShift, carry); 
+
 		} else {
+
 			// Bit 4 is 1: shift by a specified register.
-			//(optional)
 			byte_t Rs = get_Second_Nibble (thirdByte);
 			return shifter (shiftType, registers[Rs], wordToShift, carry);
 		}
 	}
 }
 
-// static byte_t get_Set_Condition_Code (byte_t thirdByte) {
-// 	return (thirdByte >> 4) & 1;
-// }
-
-static void set_CPSR (word_t result, word_t *cpsr, bit_t logical_op, bit_t carry) {
+static void set_CPSR(word_t result, word_t *cpsr, bit_t logical_op, bit_t carry) {
 	// Set N-bit
 	*cpsr &= 0x7fffffff;
 	*cpsr |= ((result >> 30) & 1) << 31;
-	// Set Z-bit -- DOUBLE CHECK if-and-only-if on page VI of spec
+	
+	// Set Z-bit 
 	if(!result) {
 		*cpsr |= 0x40000000;
 	} else {
@@ -91,22 +90,20 @@ static void set_CPSR (word_t result, word_t *cpsr, bit_t logical_op, bit_t carry
 	// Set C-bit to 0
 	*cpsr &= 0xdfffffff;
 	*cpsr |= (carry << 29);
-
 }
 
 
-void execute_data_processing (byte_t *firstByte, word_t *registers) {
-
+void execute_data_processing(byte_t *firstByte, word_t *registers) {
 	bit_t carry = 0;
 	word_t operand2 
 		= get_Operand2(firstByte[2], firstByte[3], 
 				get_immediate_operand(firstByte[0]), registers,
 				&carry); 
 
-	byte_t Rn = get_Rn(firstByte[1]);
-	byte_t Rd = get_Rd(firstByte[2]);
+	nibble_t Rn = get_Rn(firstByte[1]);
+	nibble_t Rd = get_Rd(firstByte[2]);
 
-	byte_t opCode = get_OpCode(firstByte[0], firstByte[1]);
+	nibble_t opCode = get_OpCode(firstByte[0], firstByte[1]);
 	word_t result = 0; 
 	bit_t logical_op = 0; 
 
@@ -130,13 +127,12 @@ void execute_data_processing (byte_t *firstByte, word_t *registers) {
 		case rsb:
 			registers[Rd] = operand2 - registers[Rn];
 			result = registers[Rd];
-		       	//logical_op = -1;
+		  //logical_op = -1;
 			carry = operand2 > registers[Rn] ? 0 : 1;
 			break;
 		case add:
 			registers[Rd] = registers[Rn] + operand2;
 			result = registers[Rd];
-		       	
 			// if carry set C to 1
 			carry = (registers[Rn] + operand2) >> 31 ? 1 : 0;
 			break;
