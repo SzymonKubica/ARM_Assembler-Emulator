@@ -1,71 +1,45 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h> 
-
+#include <assert.h>
 #include "assembler_defs.h"
-#include "data_processing.h"
 
 #define MAX_LINE_LENGTH 512 
+#define MAX_NUM_INSTRUCTIONS (65536 / 4)
 
 typedef struct {
 	char *label;
 	int  address; 
 } label_t;
 
-// typedef struct {
-// 	char *mnemonic;
-// 	char **operand_fields; 
-// } instruction_t;
-/*
-// returns number of lines
-int parse_first(label_t *labels, instruction_t *instructions, const char *arg) {
-	
+void parse_first (label_t **labels_p, instruction_t **instructions_p, char *arg) {
 	FILE *file;
 	file = fopen(arg,"r");
 	char line[MAX_LINE_LENGTH]; 
-	int lineNumber = 0; 
+	int address = 0;
+	instruction_t *instructions = *instructions_p;
+	label_t *labels = *labels_p;
 
 	if(file) {
 		while (fgets(line, sizeof(line), file)) {
-			lineNumber++; 
 			if (strchr(line, ':') != NULL) {
-				*labels = (label_t) { .label = strtok(line, ":"), .address = lineNumber};
+				*labels = (label_t) { .label = strtok(line, ":"), .address = address};
 				labels++; 
 			} else {
-				char *mnemonic = strtok(line, " "); 
-				char *operand_fields[4]; 
-				for(int i = 0; i < 4; operand_fields[i] = strtok(line, ","), i++);
+				char *mnemonic = strtok(line, " ,\n");
+				char *operand_fields[4];
+
+				char *token = mnemonic;
+				token = strtok(NULL, " ,\n");
+
+				for(int i = 0; i < 4; i++) {
+					operand_fields[i] = token;
+					token = strtok(NULL, " ,\n");
+				}
 				*instructions = (instruction_t) {.mnemonic = mnemonic,.operand_fields = operand_fields};
-				instructions++; 
+				instructions++;
 			}
-		}
-		fclose(file);
-	}
-
-	return lineNumber;
-}
-*/
-
-void parse_first (instruction_t *instructions, char *arg) {
-	FILE *file;
-	file = fopen(arg,"r");
-	char line[MAX_LINE_LENGTH]; 
-
-	if(file) {
-		while (fgets(line, sizeof(line), file)) {
-			char *mnemonic = strtok(line, " ,"); 
-			char *operand_fields[4]; 
-
-			char *token = mnemonic;
-			token = strtok(NULL, " ,");
-
-			for(int i = 0; i < 4; i++) {
-				operand_fields[i] = token;
-				// printf(operand_fields[i]), 
-				token = strtok(NULL, " ,");
-			}
-			*instructions = (instruction_t) {.mnemonic = mnemonic,.operand_fields = operand_fields};
-			instructions++; 
+			address+= 4;
 		}
 		fclose(file);
 	}
@@ -76,39 +50,36 @@ void parse_first (instruction_t *instructions, char *arg) {
 
 void print_instruction (instruction_t instruction){
 	printf("%s : ", instruction.mnemonic);
-
 	for (int i = 0; i < 4; i++)
 		printf("%s ", instruction.operand_fields[i]);
 	printf("\n");
-
-
 }
 
 int main(int argc, char **argv) {
 	setbuf(stdout, NULL);
-
 	if (argc != 3) {
 		perror("invalid number of arguments");
 		return EXIT_FAILURE;
 	}
 
 	char *assembly = argv[1];
-	// char *output = argv[2];
 
-	instruction_t *instructions = calloc(65536, sizeof(instruction_t));
+	instruction_t **instructions = calloc(MAX_NUM_INSTRUCTIONS, sizeof(instruction_t));
+	assert(instructions != NULL);
+	label_t **labels = calloc(MAX_NUM_INSTRUCTIONS, sizeof(label_t));
+	assert(labels != NULL);
 	
-	parse_first (instructions, assembly);
-
-	instruction_t *head = instructions;
+	parse_first (labels, instructions, assembly);
 
 	printf("instructions\n");
 
-	for (; instructions->mnemonic != NULL; instructions++) {
-		print_instruction(*instructions);
+	instruction_t **head = instructions;
+	for (; (*head)->mnemonic != NULL; head++) {
+		print_instruction(**head);
 	}
-	
-	free(head);
-	
+
+	free(instructions);
+	free(labels);
 
 	return EXIT_SUCCESS;
 }

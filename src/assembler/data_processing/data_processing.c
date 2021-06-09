@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// //opcodes
+// OpCodes
 // #define add_opcode (0x0)
 // #define eor_opcode (0x1)
 // #define sub_opcode (0x2)
@@ -25,12 +25,13 @@ byte_t parse_reg (char *reg) {
 	return atoi(reg);
 }
 
+/*
 void add_process (FILE *file, instruction_t instruction) {
 	byte_t opcode = 0000;
 	byte_t firstByte = 0xe << 4;
 	byte_t s = 0;
-
 }
+*/
 
 void mov_process (FILE *file, instruction_t instruction) {
 	
@@ -44,7 +45,7 @@ void mov_process (FILE *file, instruction_t instruction) {
 
 	word_t operand2 = 0;
 
-	if (instruction.operand_fields[1][0] = '#') {
+	if (instruction.operand_fields[1][0] == '#') {
 		// constant
 		immediate = 1;
 		operand2 = parse_numb (instruction.operand_fields[1]);
