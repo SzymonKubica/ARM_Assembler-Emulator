@@ -29,7 +29,6 @@ static symbol_table_entry_t * new_entry(char *label, int address) {
 	return entry;
 }
 
-
 static void free_symbol_table_entry(symbol_table_entry_t *entry) {
 	free(entry);
 }  
@@ -41,10 +40,10 @@ void symbol_table_init(symbol_table_t *table) {
 
 bool add_entry(symbol_table_t *table, char *label, int address){
 	symbol_table_entry_t *current_entry = table->head;	
-	symbol_table_entry_t *successor_entry = current_entry->next;
+	symbol_table_entry_t *successor_entry = current_entry->next; 
 
 	while(successor_entry) {
-		if (strcmp(current_entry->label, label) == 0) {
+		if (strncmp(successor_entry->label, label, strlen(label)) == 0) {
 			// Label already present in the symbol_table.
 			return false;
 		}
@@ -60,11 +59,12 @@ bool add_entry(symbol_table_t *table, char *label, int address){
 }
 
 bool get_address(symbol_table_t *table, char *label, int *address_pointer) {
-	symbol_table_entry_t *current_entry = table->head;
 
 	if (table->size == 0) {
 		return false;
 	}
+
+	symbol_table_entry_t *current_entry = table->head->next;
 
 	while(current_entry) {
 		if (strcmp(current_entry->label, label) == 0) {

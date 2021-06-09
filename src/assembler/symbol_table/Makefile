@@ -12,7 +12,14 @@ clean:
 $(LIB): $(LIBOBJ)
 	ar rcs $(LIB) $(LIBOBJ)
 
+test: symbol_table_test
+
 symbol_table.o: symbol_table.h
+
+symbol_table_test: symbol_table_test.o symbol_table.o
+symbol_table_test.o: symbol_table.h
+
+
 
 
 
