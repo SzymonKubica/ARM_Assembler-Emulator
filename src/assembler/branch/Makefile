@@ -1,5 +1,6 @@
 CC     = gcc
-CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic
+CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../symbol_table
+LDLIBS = -L../symbol_table -lsymbol_table
 LIB    = libbranch.a
 LIBOBJ = branch.o
 BUILD  = $(LIB)

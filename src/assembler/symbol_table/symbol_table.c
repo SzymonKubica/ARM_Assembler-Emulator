@@ -58,22 +58,24 @@ bool add_entry(symbol_table_t *table, char *label, int address){
 	return true;
 }
 
-bool get_address(symbol_table_t *table, char *label, int *address_pointer) {
+int get_address(symbol_table_t *table, char *label) {
 
 	if (table->size == 0) {
-		return false;
+		printf("Attempt to get an address from an empty table.");
+		exit(EXIT_FAILURE);
 	}
 
 	symbol_table_entry_t *current_entry = table->head->next;
 
 	while(current_entry) {
 		if (strcmp(current_entry->label, label) == 0) {
-			*address_pointer = current_entry->address;
-			return true;
+			return current_entry->address;
 		}
 		current_entry = current_entry->next;
 	}
-	return false;
+	
+	printf("No such label in the symbol table.");
+	exit(EXIT_FAILURE);
 }
 
 void table_destroy(symbol_table_t *table) {

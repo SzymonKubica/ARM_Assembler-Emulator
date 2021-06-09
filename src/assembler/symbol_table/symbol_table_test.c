@@ -20,17 +20,11 @@ int main(void) {
 	add_entry(test_table, "label4", 4);
 	add_entry(test_table, "label5", 5);
 
-	int address1 = 0;
-	int address2 = 0;
-	int address3 = 0;
-	int address4 = 0;
-	int address5 = 0;
-
-	get_address(test_table, "label1", &address1);
-	get_address(test_table, "label2", &address2);
-	get_address(test_table, "label3", &address3);
-	get_address(test_table, "label4", &address4);
-	get_address(test_table, "label5", &address5);
+	int address1 = get_address(test_table, "label1");
+	int address2 = get_address(test_table, "label2");
+	int address3 = get_address(test_table, "label3");
+	int address4 = get_address(test_table, "label4");
+	int address5 = get_address(test_table, "label5");
 
 	testcond(address1 == 1, " get address 1");
 	testcond(address2 == 2, " get address 2");
