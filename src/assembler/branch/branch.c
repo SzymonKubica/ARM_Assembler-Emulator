@@ -1,6 +1,9 @@
 #include "../../assembler_defs.h"
 #include "branch.h"
-#include "symbol_table.h"
+
+/*
+ * Branch Instructions Assembler module: implementation
+ */
 
 #define cond_offset 28
 #define pipeline_offset 8
@@ -14,11 +17,11 @@
 #define le 13 // 1101
 #define al 14 // 1110
 
-word_t get_branch_instruction_template(void) {
+static word_t get_branch_instruction_template(void) {
 	return 0x5 /* 101 */ << 25;
 }
 
-nibble_t get_cond(char *cond) {
+static nibble_t get_cond(char *cond) {
 	char first_letter = cond[0];
 	char second_letter = cond[1];
 

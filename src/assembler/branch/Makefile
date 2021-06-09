@@ -13,7 +13,12 @@ clean:
 $(LIB): $(LIBOBJ)
 	ar rcs $(LIB) $(LIBOBJ)
 
+test: branch_test
+
 branch.o: branch.h
+
+branch_test: branch_test.o branch.o
+branch_test.o: branch.h
 
 
 
