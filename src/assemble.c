@@ -17,26 +17,40 @@ void parse_first (label_t **labels_p, instruction_t **instructions_p, char *arg)
 	file = fopen(arg,"r");
 	char line[MAX_LINE_LENGTH]; 
 	int address = 0;
-	instruction_t *instructions = *instructions_p;
-	label_t *labels = *labels_p;
+	instruction_t **instructions = instructions_p;
+	label_t **labels = labels_p;
 
 	if(file) {
 		while (fgets(line, sizeof(line), file)) {
 			if (strchr(line, ':') != NULL) {
-				*labels = (label_t) { .label = strtok(line, ":"), .address = address};
-				labels++; 
+				// *labels = (label_t) { .label = strtok(line, ":"), .address = address};
+				 labels++; 
 			} else {
 				char *mnemonic = strtok(line, " ,\n");
-				char *operand_fields[4];
-
+				char **operand_fields = (char**) calloc (4, sizeof(char *));
+				
 				char *token = mnemonic;
 				token = strtok(NULL, " ,\n");
 
-				for(int i = 0; i < 4; i++) {
-					operand_fields[i] = token;
+				for(int i = 0; token != NULL; i++) {
+					char *string = malloc (sizeof (char) *MAX_LINE_LENGTH);
+					strcpy(string, token);
+
+					operand_fields[i] = string;
+					
 					token = strtok(NULL, " ,\n");
 				}
-				*instructions = (instruction_t) {.mnemonic = mnemonic,.operand_fields = operand_fields};
+
+				instruction_t *inst = malloc(sizeof(instruction_t *));
+
+				char *string = malloc(sizeof(char) *MAX_LINE_LENGTH);
+				strcpy (string, mnemonic);
+
+				inst->mnemonic = string;
+				inst->operand_fields = operand_fields; 
+				// (instruction_t) {.mnemonic = mnemonic,.operand_fields = operand_fields}
+				*instructions = inst;
+				// printf("%s",(*instructions_p)->mnemonic);
 				instructions++;
 			}
 			address+= 4;
@@ -64,9 +78,9 @@ int main(int argc, char **argv) {
 
 	char *assembly = argv[1];
 
-	instruction_t **instructions = calloc(MAX_NUM_INSTRUCTIONS, sizeof(instruction_t));
+	instruction_t **instructions = calloc(MAX_NUM_INSTRUCTIONS, sizeof(instruction_t *));
 	assert(instructions != NULL);
-	label_t **labels = calloc(MAX_NUM_INSTRUCTIONS, sizeof(label_t));
+	label_t **labels = calloc(MAX_NUM_INSTRUCTIONS, sizeof(label_t *));
 	assert(labels != NULL);
 	
 	parse_first (labels, instructions, assembly);
@@ -74,7 +88,7 @@ int main(int argc, char **argv) {
 	printf("instructions\n");
 
 	instruction_t **head = instructions;
-	for (; (*head)->mnemonic != NULL; head++) {
+	for (; (*head) != NULL && (head) != NULL; (head)++) {
 		print_instruction(**head);
 	}
 

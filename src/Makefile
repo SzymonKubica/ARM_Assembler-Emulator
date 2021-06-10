@@ -12,6 +12,7 @@ all: $(BUILD)
 clean:
 	/bin/rm -f $(BUILD) *.o core
 	cd emulator; make clean
+	cd assembler; make clean
 
 libs:
 	cd emulator; make
