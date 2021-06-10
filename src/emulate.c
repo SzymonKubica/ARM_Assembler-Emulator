@@ -3,13 +3,7 @@
 #include <stdbool.h>
 
 #include "defns.h"
-#include "cond.h"
-
-#include "data_processing.h"
-#include "multiply.h"
-#include "single_data_transfer.h"
-#include "branch.h"
-#include "gpio.h"
+#include "./emulator/emulator_functions.h"
 
 #define PC 15
 #define CPSR 16

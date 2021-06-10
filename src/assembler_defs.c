@@ -73,8 +73,11 @@ mnemonic get_Mnemonic (char *m){
 	}
 	else if (strcmp(m, "andeq") == 0){
 		return (mnemonic) ANDEQ;
+	} else {
+		perror("mnemonic not found");
+		exit(EXIT_FAILURE);
 	}
-};
+}
 
 void write_to_file (FILE *file, byte_t firstByte, byte_t secondByte, byte_t thirdByte, byte_t fourthByte) {
 	fputc(fourthByte, file);

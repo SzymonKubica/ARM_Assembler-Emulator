@@ -42,8 +42,6 @@ typedef enum {
 	BNE,
 	BGE,
 	BLT,
-	BGE,
-	BLT,
 	BGT,
 	BLE,
 	B,
