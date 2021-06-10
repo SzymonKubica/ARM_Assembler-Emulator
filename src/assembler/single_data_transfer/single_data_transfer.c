@@ -6,6 +6,8 @@
 #include "../../assembler_defs.h"
 #include "single_data_transfer.h"
 
+#define PC 15;
+
 static word_t get_sdt_instruction_template(void) {
 	return 1 << 26; // Bits 27-26 in sdt instruction are always: 01.
 }
@@ -125,6 +127,13 @@ static int parse_offset_by_expression(char *address) {
 	return atoi(offset_representation);
 }
 
+int parse_argument(char *address) {
+	assert(address[0] == '=');
+	// Initialising ptr to point to the first digit.
+	char *ptr = address + 1;
+	return atoi(ptr);
+}
+
 word_t assemble_single_data_transfer_instruction(
 	char *mnemonic, 
 	int Rd,
@@ -135,16 +144,36 @@ word_t assemble_single_data_transfer_instruction(
 	set_cond(&result);
 	set_Rd(&result, Rd);
 
-	int Rn = parse_base_register_number(address);
-	set_Rn(&result, Rn);
-
 	if (is_ldr_instruction(mnemonic)) {
 		set_L_bit(&result);
+
+		// TODO: finish this once hepler functions are working.
+		// A numeric constant of the form: <=expression> (ldr only).
 		if (address[0] == '=') {
-			// A numeric constant of the form: <=expression> (ldr only).
-			// TODO: implement this case. (See page 15, bulletpoint 1)
+		/*
+			int argument = parse_argument(address);
+			if (argument <= 0xff) {
+				// According to the spec we should use mov instead.
+				// as the argument fits inside the argument of mov.
+				return assemble_data_processing( arguments for mov );
+			} else {
+				// The argument doesn't fit, putting the value of <expression> 
+				// at the end of the assembled program 
+				// int end_address = get_end_address(memory);
+				// write_to_memory(end_address, (word_t argument));
+				// According to the spec: always pre-indexed:
+				set_P_bit(&result);
+				set_Rn(&result, PC);
+				int current_address = get_current_address();
+				set_offset(&result, end_address - current_address);
+				return result;
+			}
+		*/
 		}
 	}
+
+	int Rn = parse_base_register_number(address);
+	set_Rn(&result, Rn);
 
 	if (is_pre_indexing_address(address)) {
 		set_P_bit(&result);
@@ -163,6 +192,9 @@ word_t assemble_single_data_transfer_instruction(
 		// Offset is an immediate value, I bit not set.
 		set_offset(&result, offset);
 	} else {
+		// Offset by a (shifted) register - I bit is set.
+		set_I_bit(&result);
+
 		// TODO (optional): pre-indexing case: [Rn, {+/-} Rm{, <shift>}].
 		// TODO (optional): post-indexint case: [Rn],{+/-} Rm{, <shift>}.
 	}
