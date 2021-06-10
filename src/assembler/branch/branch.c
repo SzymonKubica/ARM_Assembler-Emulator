@@ -110,4 +110,4 @@ word_t assemble_branch_instruction(
 	set_offset(&binary_instruction, offset_24_bits);
 
 	return binary_instruction;
-}
+
