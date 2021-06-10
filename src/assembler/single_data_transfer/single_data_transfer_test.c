@@ -49,6 +49,28 @@ void test1() {
 	testcond(result == 0xe5832000, "case: str r2, [r3]");
 }
 
+// This test case simulates the assembly of a "str r0, [r1, #28] instruction from test suite.
+void test2() {
+
+	// Initialising arguments.
+	char *mnemonic = "str";
+	char *address = "[r1, #28]";
+	int Rd = 0;
+
+
+	word_t result = 
+		assemble_single_data_transfer_instruction(mnemonic, Rd, address);
+
+	// Prints the result in the same format as on p17 in the spec.
+	//print_binary(result);
+	// Prints the actual value of the result in hexadecimal.
+	//printf("%x\n", result);
+
+	testcond(result == 0xe581001c, "case: str r0, [r1, #28]");
+
+}
+
 int main(void) {
 	test1();	
+	test2();
 }

@@ -32,6 +32,10 @@ static void set_Rn(word_t *binary_instruction, int Rn) {
 	*binary_instruction |= (Rn << 16);
 }
 
+static void set_offset(word_t *binary_instruction, int offset) {
+	*binary_instruction |= abs(offset);
+}
+
 //static void set_I_bit(word_t *binary_instruction) {
 	//set_Nth_bit(binary_instruction, 25);
 //}
@@ -51,7 +55,6 @@ static void set_L_bit(word_t *binary_instruction) {
 static bool is_pre_indexing_address(char *address) {
 	return address[0] == '[' && address[strlen(address) - 1] == ']';
 }
-
 
 static bool is_zero_offset(char *address) {
 	// If the offset is zero, the address has a form [Rn] which has length 4.
@@ -87,6 +90,41 @@ static int parse_base_register_number(char *address) {
 	}
 }
 
+static bool is_offset_by_expression(char *address) {
+	// If offset is specified by <#expression> char '#' is present in the string.
+	char *ptr = address;
+	for (; *ptr != '\0'; ptr++) {
+		if (*ptr == '#') {
+			return true;
+		}
+	}
+	return false;
+}
+
+static int parse_offset_by_expression(char *address) {
+	assert(is_offset_by_expression(address));
+	char *ptr = address;
+	while (*ptr != '#') {
+		ptr++;
+	}
+	assert(*ptr == '#');
+	// Adjusting ptr so that it points to the first digit or '-' character.
+	ptr++;
+	char *first_digit = ptr;
+	int length_of_offset_decimal_representation = 0;
+	while (is_digit(*ptr) || *ptr == '-') {
+		length_of_offset_decimal_representation++;
+		ptr++;
+	}
+	char offset_representation[length_of_offset_decimal_representation + 1]; 
+	for (int i = 0; i < length_of_offset_decimal_representation; i++) {
+		offset_representation[i] = *first_digit;
+		first_digit++;
+	} 
+	offset_representation[length_of_offset_decimal_representation] = '\0';
+	return atoi(offset_representation);
+}
+
 word_t assemble_single_data_transfer_instruction(
 	char *mnemonic, 
 	int Rd,
@@ -110,12 +148,23 @@ word_t assemble_single_data_transfer_instruction(
 
 	if (is_pre_indexing_address(address)) {
 		set_P_bit(&result);
-		if (!is_zero_offset(address)) {
-			// TODO: calculate offset.				
-		} else {
-			// In the case of zero offset, the Up bit is set as we 'add' zero.
+	}
+
+	if (is_zero_offset(address)) {
+		// In the case of zero offset, the Up bit is set as we 'add' zero.
+		set_U_bit(&result);
+	} else if (is_offset_by_expression(address)) {
+
+		// Parsing the offset by expression starting with '#'.
+		int offset = parse_offset_by_expression(address);	
+		if (offset > 0) {
 			set_U_bit(&result);
 		}
+		// Offset is an immediate value, I bit not set.
+		set_offset(&result, offset);
+	} else {
+		// TODO (optional): pre-indexing case: [Rn, {+/-} Rm{, <shift>}].
+		// TODO (optional): post-indexint case: [Rn],{+/-} Rm{, <shift>}.
 	}
 	return result;
 }
