@@ -29,6 +29,13 @@ void print_binary(word_t word) {
 	printf("\n");
 }
 
+void log_output_for_debugging(word_t output) {
+	// Prints the result in the same format as on p17 in the spec.
+	print_binary(output);
+	// Prints the actual value of the result in hexadecimal.
+	printf("%x\n", output);
+}
+
 // This test case simulates the assembly of a "str r2, [r3]" instruction from p17.
 void test1() {
 
@@ -40,16 +47,13 @@ void test1() {
 
 	word_t result = 
 		assemble_single_data_transfer_instruction(mnemonic, Rd, address);
-
-	// Prints the result in the same format as on p17 in the spec.
-	//print_binary(result);
-	// Prints the actual value of the result in hexadecimal.
-	//printf("%x", result);
+	
+	//log_output_for_debugging(result);
 
 	testcond(result == 0xe5832000, "case: str r2, [r3]");
 }
 
-// This test case simulates the assembly of a "str r0, [r1, #28] instruction from test suite.
+// This test case simulates the assembly of a "str r0, [r1, #28]" instruction from test suite.
 void test2() {
 
 	// Initialising arguments.
@@ -61,16 +65,30 @@ void test2() {
 	word_t result = 
 		assemble_single_data_transfer_instruction(mnemonic, Rd, address);
 
-	// Prints the result in the same format as on p17 in the spec.
-	//print_binary(result);
-	// Prints the actual value of the result in hexadecimal.
-	//printf("%x\n", result);
+	//log_output_for_debugging(result);
 
 	testcond(result == 0xe581001c, "case: str r0, [r1, #28]");
+}
 
+// This test case simulates the assembly of a "ldr r2, [r1], #5" instruction from test suite.
+void test3() {
+
+	// Initialising arguments.
+	char *mnemonic = "ldr";
+	char *address = "[r1], #5";
+	int Rd = 2;
+
+
+	word_t result = 
+		assemble_single_data_transfer_instruction(mnemonic, Rd, address);
+
+	//log_output_for_debugging(result);
+
+	testcond(result == 0xe4912005, "case: ldr r2, [r1] #5");
 }
 
 int main(void) {
 	test1();	
 	test2();
+	test3();
 }
