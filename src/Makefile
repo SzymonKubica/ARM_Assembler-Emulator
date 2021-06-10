@@ -19,6 +19,7 @@ libs:
 	cd assembler; make
 
 assemble: assemble.o
+assemble.o: assembler_defs.h
 
 emulate: emulate.o
 emulate.o: defns.h

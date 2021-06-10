@@ -2,7 +2,10 @@
 #include <stdio.h>
 #include <string.h> 
 #include <assert.h>
+
+#include "defns.h"
 #include "assembler_defs.h"
+#include "multiply.h"
 
 #define MAX_LINE_LENGTH 512 
 #define MAX_NUM_INSTRUCTIONS (65536 / 4)
@@ -101,10 +104,22 @@ int main(int argc, char **argv) {
 	printf("instructions\n");
 
 	instruction_t **head = instructions;
+	
+	FILE *output = fopen(argv[2], "wb");
+	
 	for (; (*head) != NULL && (head) != NULL; (head)++) {
-		print_instruction(**head);
+		
+		// word_t word;
+
+		// print_instruction(**head);
+		if (!(strcmp((*head)->mnemonic, "mul")) ||
+			!(strcmp((*head)->mnemonic, "mla"))
+		) {
+			assemble_multiply (**head, output);
+		}
 	}
 
+	
 	free_instructions(instructions);
 	free(instructions);
 	free(labels);
