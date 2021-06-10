@@ -69,6 +69,19 @@ void print_instruction (instruction_t instruction){
 	printf("\n");
 }
 
+void free_instruction(instruction_t **instructions) {	
+	for (; instructions != NULL && (*instructions != NULL); instructions++ ) {
+		
+		free((*instructions)->mnemonic);
+		for (int i = 0; i < 4; i++)
+			free((*instructions)->operand_fields [i]);
+		
+		free((*instructions)->operand_fields);
+		free(*instructions);
+	}
+
+}
+
 int main(int argc, char **argv) {
 	setbuf(stdout, NULL);
 	if (argc != 3) {
@@ -92,6 +105,7 @@ int main(int argc, char **argv) {
 		print_instruction(**head);
 	}
 
+	free_instruction(instructions);
 	free(instructions);
 	free(labels);
 
