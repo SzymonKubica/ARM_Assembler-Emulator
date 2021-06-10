@@ -69,7 +69,7 @@ void print_instruction (instruction_t instruction){
 	printf("\n");
 }
 
-void free_instruction(instruction_t **instructions) {	
+void free_instructions(instruction_t **instructions) {	
 	for (; instructions != NULL && (*instructions != NULL); instructions++ ) {
 		
 		free((*instructions)->mnemonic);
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 		print_instruction(**head);
 	}
 
-	free_instruction(instructions);
+	free_instructions(instructions);
 	free(instructions);
 	free(labels);
 
