@@ -102,8 +102,6 @@ int main(int argc, char **argv) {
 	
 	parse_first (labels, instructions, assembly);
 
-	printf("instructions\n");
-
 	instruction_t **head = instructions;
 	
 	FILE *file = fopen(argv[2], "wb");

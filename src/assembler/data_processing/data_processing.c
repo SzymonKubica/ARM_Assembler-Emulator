@@ -8,10 +8,14 @@
 #define cond (0xe << 4)
 
 static byte_t parse_numb (char *number) {
-	return strtol(number++, NULL, 0);
+	return strtol(++number, NULL, 0);
 }
 
 static word_t int_to_operand2(word_t val) {
+	if(val <= 0xff) {
+		return val;
+	}
+	
 	word_t curr = val;
 	word_t immediate = 0x0;
 	for(int i = 0; i < 16; i++) {
