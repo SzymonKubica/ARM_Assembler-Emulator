@@ -7,17 +7,10 @@
 
 #define cond (0xe << 4)
 
-static byte_t parse_numb (char *number) {
-	return strtol(++number, NULL, 0);
-}
-
 static word_t int_to_operand2(word_t val) {
-	if(val <= 0xff) {
-		return val;
-	}
+	word_t curr = val & (~0xff);
+	word_t immediate = val & 0xff;
 	
-	word_t curr = val;
-	word_t immediate = 0x0;
 	for(int i = 0; i < 16; i++) {
 		if(immediate >> 8) {
 			printf("invalid operand2:");
@@ -39,7 +32,7 @@ static word_t int_to_operand2(word_t val) {
 // to the I value 
 static word_t get_Operand2 (char *op2) {
 	if(op2[0] == '#') {
-		return ((1 << 12) | int_to_operand2(parse_numb(op2)));
+		return ((1 << 12) | int_to_operand2(strtol(++op2, NULL, 0)));
 	}
 	return get_Register(op2);
 }
