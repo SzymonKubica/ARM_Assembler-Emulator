@@ -17,6 +17,6 @@ void symbol_table_init(symbol_table_t *table);
 
 bool add_entry(symbol_table_t *table, char *label, int address);
 
-bool get_address(symbol_table_t *table, char *label, int *address_pointer);
+int get_address(symbol_table_t *table, char *label);
 
 void table_destroy(symbol_table_t *table);
