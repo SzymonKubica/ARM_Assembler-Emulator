@@ -3,6 +3,6 @@
 
 #include "../../assembler_defs.h"
 
-void data_processing (FILE *file, instruction_t instruction);
+void data_processing (instruction_t instruction, FILE *file);
 
 #endif

@@ -1,42 +1,24 @@
 #include <stdlib.h>
 #include <string.h>
-
-// //opcodes
-// #define add_opcode (0x0)
-// #define eor_opcode (0x1)
-// #define sub_opcode (0x2)
-// #define rsb_opcode (0x3)
-
 #include <stdio.h>
 
 #include "../../assembler_defs.h"
+#include "data_processing.h"
 
 #define cond (0xe << 4)
 
-byte_t parse_numb (char *number) {
-	if (number[1] == '0' && number[2] == 'x') {
-		return atoi (&number[3]);
-	} else {
-		return atoi(&number[1]);
-	}
+static byte_t parse_numb (char *number) {
+	return strtol(number++, NULL, 0);
 }
 
-byte_t parse_reg (char *reg) {
-	return atoi(reg);
-}
-
-void add_process (FILE *file, instruction_t instruction) {
-	byte_t opcode = 0000;
-	byte_t firstByte = 0xe << 4;
-	byte_t s = 0;
+/*static word_t get_Operand2 (char *op2) {
 
 }
+*/
 
-void mov_process (FILE *file, instruction_t instruction) {
+static void mov_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
 	
-	byte_t opcode = 0xd;
-	
-	byte_t Rd = parse_reg (&instruction.operand_fields[0][1]);
+	byte_t Rd = get_Register(instruction.operand_fields[0]);
 	byte_t Rn = 0;
 	
 	byte_t S = 0;
@@ -44,18 +26,18 @@ void mov_process (FILE *file, instruction_t instruction) {
 
 	word_t operand2 = 0;
 
-	if (instruction.operand_fields[1][0] = '#') {
+	if (instruction.operand_fields[1][0] == '#') {
 		// constant
 		immediate = 1;
 		operand2 = parse_numb (instruction.operand_fields[1]);
 	} else {
 		// register
-		operand2 = parse_reg(instruction.operand_fields[1]);
+		operand2 = get_Register(instruction.operand_fields[1]);
 	}
 
 	byte_t binary[4] 
-		= {cond | (immediate << 1) | (opcode >> 3),
-		(opcode << 5) | (S << 4) | Rn,
+		= {cond | (immediate << 1) | (opCode >> 3),
+		(opCode << 5) | (S << 4) | Rn,
 		(Rd << 4) | operand2 >> 8,
 		operand2
 	};
@@ -65,17 +47,24 @@ void mov_process (FILE *file, instruction_t instruction) {
 	} 
 }
 
-void data_processing (FILE *file, instruction_t instruction) {
-	// switch (instruction.mnemonic) {
-	// 	case "add":
-	// 		add_process(file, instruction);
-	// 		break;
-		// case "mov":
-		if (!strcmp (instruction.mnemonic, "mov"))
-			mov_process(file, instruction);
-			// break;
-		// case "sub":
-			
-	// }
+static void compute_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
+}
 
+static void cpsr_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
+}
+
+void data_processing (instruction_t instruction, FILE *file) {
+	byte_t m = get_Mnemonic(instruction.mnemonic); 
+	switch (m) {
+		case MOV:
+			mov_instruction(file, instruction, m);
+			break;
+		case TST:
+		case TEQ:
+		case CMP:
+			cpsr_instruction(file, instruction, m);
+			break;
+		default:
+			compute_instruction(file, instruction, m); 
+	}
 }
