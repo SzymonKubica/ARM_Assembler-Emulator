@@ -5,6 +5,7 @@
 
 #include "../../assembler_defs.h"
 #include "../../defns.h"
+#include "multiply.h"
 
 #define firstByte (0xe << 4)
 

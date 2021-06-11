@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "../../assembler_defs.h"
+#include "data_processing.h"
 
 #define cond (0xe << 4)
 
@@ -31,12 +32,12 @@ static void mov_instruction (FILE *file, instruction_t instruction, byte_t opCod
 		operand2 = parse_numb (instruction.operand_fields[1]);
 	} else {
 		// register
-		operand2 = parse_reg(instruction.operand_fields[1]);
+		operand2 = get_Register(instruction.operand_fields[1]);
 	}
 
 	byte_t binary[4] 
-		= {cond | (immediate << 1) | (opcode >> 3),
-		(opcode << 5) | (S << 4) | Rn,
+		= {cond | (immediate << 1) | (opCode >> 3),
+		(opCode << 5) | (S << 4) | Rn,
 		(Rd << 4) | operand2 >> 8,
 		operand2
 	};
@@ -58,8 +59,10 @@ void data_processing (instruction_t instruction, FILE *file) {
 		case MOV:
 			mov_instruction(file, instruction, m);
 			break;
-		case TST, TEQ, CMP:
-			compute_instruction(file, instruction, m);
+		case TST:
+		case TEQ:
+		case CMP:
+			cpsr_instruction(file, instruction, m);
 			break;
 		default:
 			compute_instruction(file, instruction, m); 
