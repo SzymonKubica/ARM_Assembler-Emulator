@@ -2,5 +2,4 @@
 #include "branch/branch.h"
 #include "single_data_transfer/single_data_transfer.h"
 #include "data_processing/data_processing.h"
-#include "symbol_table/symbol_table.h"
 #include "special/special.h"

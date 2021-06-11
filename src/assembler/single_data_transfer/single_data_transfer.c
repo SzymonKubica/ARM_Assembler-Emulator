@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 
@@ -7,6 +8,8 @@
 #include "single_data_transfer.h"
 
 #define PC 15;
+#define byte_length 8
+#define bytes_in_a_word 4
 
 static word_t get_sdt_instruction_template(void) {
 	return 1 << 26; // Bits 27-26 in sdt instruction are always: 01.
@@ -38,9 +41,9 @@ static void set_offset(word_t *binary_instruction, int offset) {
 	*binary_instruction |= abs(offset);
 }
 
-//static void set_I_bit(word_t *binary_instruction) {
-	//set_Nth_bit(binary_instruction, 25);
-//}
+static void set_I_bit(word_t *binary_instruction) {
+	set_Nth_bit(binary_instruction, 25);
+}
 
 static void set_P_bit(word_t *binary_instruction) {
 	set_Nth_bit(binary_instruction, 24);
@@ -127,18 +130,48 @@ static int parse_offset_by_expression(char *address) {
 	return atoi(offset_representation);
 }
 
-int parse_argument(char *address) {
+/*
+static int parse_argument(char *address) {
 	assert(address[0] == '=');
 	// Initialising ptr to point to the first digit.
 	char *ptr = address + 1;
 	return atoi(ptr);
 }
+*/
 
-word_t assemble_single_data_transfer_instruction(
-	char *mnemonic, 
-	int Rd,
-	char *address) 
-{
+static char * get_address(char **operand_fields) {
+	char *address = malloc(20);
+	char *address_ptr = address;
+	for (int i = 0; i < 4; i++) {
+		char *ptr = operand_fields[i];
+		while (ptr != 0 && *ptr != '\0') {
+			*address_ptr = *ptr; 
+			address_ptr++;
+			ptr++;
+		}
+	}
+	*address_ptr = '\0';
+	return address;
+}
+
+// Returns nth byte in a word instruction, byte indices start at 1.
+byte_t get_Nth_byte(int n, word_t word) {
+	return (byte_t) (word >> ((bytes_in_a_word - n) * byte_length));
+}
+
+// Writes to the file in little Endian.
+void write_word(word_t word, FILE *file) {
+	fputc(get_Nth_byte(4, word), file);
+	fputc(get_Nth_byte(3, word), file);
+	fputc(get_Nth_byte(2, word), file);
+	fputc(get_Nth_byte(1, word), file);
+}
+
+word_t assemble_single_data_transfer(instruction_t instruction, FILE *file) {
+
+	char *mnemonic = instruction.mnemonic;
+	int Rd = get_Register(instruction.operand_fields[0]);
+	char *address = get_address(instruction.operand_fields);
 
 	word_t result = get_sdt_instruction_template();
 	set_cond(&result);
@@ -198,6 +231,7 @@ word_t assemble_single_data_transfer_instruction(
 		// TODO (optional): pre-indexing case: [Rn, {+/-} Rm{, <shift>}].
 		// TODO (optional): post-indexint case: [Rn],{+/-} Rm{, <shift>}.
 	}
+	write_word(result, file);
 	return result;
 }
 	

@@ -41,14 +41,26 @@ void test1() {
 
 	// Initialising arguments.
 	char *mnemonic = "str";
+	char *register_string = "r2";
 	char *address = "[r3]";
-	int Rd = 2;
+	char **operand_fields = (char**) calloc (4, sizeof(char *));
+	operand_fields[0] = register_string;
+	operand_fields[1] = address;
+	instruction_t instruction = {mnemonic, operand_fields};
 
+	FILE *file;
+	file = fopen("test_binaries/test1.bin", "wb");
 
-	word_t result = 
-		assemble_single_data_transfer_instruction(mnemonic, Rd, address);
+	word_t result;
 	
-	//log_output_for_debugging(result);
+	if (file) {
+		result = assemble_single_data_transfer(instruction, file);
+	}
+	
+	fclose(file);
+	free(operand_fields);
+
+	log_output_for_debugging(result);
 
 	testcond(result == 0xe5832000, "case: str r2, [r3]");
 }
@@ -58,14 +70,28 @@ void test2() {
 
 	// Initialising arguments.
 	char *mnemonic = "str";
-	char *address = "[r1, #28]";
-	int Rd = 0;
+	char *token1 = "[r1";
+	char *token2 = "#28]";
+	char *register_string = "r0";
+	char **operand_fields = (char**) calloc (4, sizeof(char *));
+	operand_fields[0] = register_string;
+	operand_fields[1] = token1;
+	operand_fields[2] = token2;
+	instruction_t instruction = {mnemonic, operand_fields};
 
+	FILE *file;
+	file = fopen("test_binaries/test2.bin", "wb");
 
-	word_t result = 
-		assemble_single_data_transfer_instruction(mnemonic, Rd, address);
+	word_t result;
 
-	//log_output_for_debugging(result);
+	if (file) {
+		result = assemble_single_data_transfer(instruction, file);
+	}
+
+	fclose(file);
+	free(operand_fields);
+
+	log_output_for_debugging(result);
 
 	testcond(result == 0xe581001c, "case: str r0, [r1, #28]");
 }
@@ -75,14 +101,28 @@ void test3() {
 
 	// Initialising arguments.
 	char *mnemonic = "ldr";
-	char *address = "[r1], #5";
-	int Rd = 2;
+	char *token1 = "[r1]";
+	char *token2 = "#5";
+	char *register_string = "r2";
+	char **operand_fields = (char**) calloc (4, sizeof(char *));
+	operand_fields[0] = register_string;
+	operand_fields[1] = token1;
+	operand_fields[2] = token2;
+	instruction_t instruction = {mnemonic, operand_fields};
 
+	FILE *file;
+	file = fopen("test_binaries/test2.bin", "wb");
 
-	word_t result = 
-		assemble_single_data_transfer_instruction(mnemonic, Rd, address);
+	word_t result;
 
-	//log_output_for_debugging(result);
+	if (file) {
+		result = assemble_single_data_transfer(instruction, file);
+	}
+
+	fclose(file);
+	free(operand_fields);
+
+	log_output_for_debugging(result);
 
 	testcond(result == 0xe4912005, "case: ldr r2, [r1] #5");
 }
