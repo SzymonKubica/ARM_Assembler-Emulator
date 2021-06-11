@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "branch.h"
+#include "../../assembler_defs.h"
 #include "../../defns.h"
+#include "branch.h"
 
 void testcond(bool condition, char *test_name) {
 	printf( "T %s: %s\n", test_name, (condition ? "OK" : "FAIL"));
@@ -33,18 +34,20 @@ void print_binary(word_t word) {
 void test1() {
 
 	// Initialising arguments.
-	char *cond = "ne";
-	char *label = "loop";
+	char *mnemonic = "bne";
+	char **operand_fields = malloc(sizeof(char *));
+	operand_fields[0] = "loop";
+	instruction_t instruction = {mnemonic, operand_fields};
 	int loop_address = 0x8;
 	int current_address = 0x18; // Instruction is at 0x18, offset due to pipeline.
 
 	// Populating symbol table.
 	symbol_table_t *table = malloc(sizeof(symbol_table_t));
 	symbol_table_init(table);
-	add_entry(table, label, loop_address);
+	add_entry(table, operand_fields[0], loop_address);
 
 	word_t result = 
-		assemble_branch_instruction(cond, label, table, current_address);
+		assemble_branch(instruction, table, current_address);
 
 	// Prints the result in the same format as on p17 in the spec.
 	//print_binary(result);

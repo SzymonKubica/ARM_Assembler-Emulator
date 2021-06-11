@@ -1,5 +1,6 @@
 #include "../../assembler_defs.h"
 #include "branch.h"
+#include <assert.h>
 
 /*
  * Branch Instructions Assembler module: implementation
@@ -87,13 +88,20 @@ static void set_offset(word_t *instruction, word_t offset) {
 	*instruction |= offset;
 }
 
-word_t assemble_branch_instruction(
-	char *cond, 
-	char *label, 
+static char * parse_cond(char *mnemonic) {
+	assert(*mnemonic == 'b');
+	return mnemonic + 1;
+		
+}
+
+word_t assemble_branch(
+	instruction_t instruction,
 	symbol_table_t *table, 
 	int current_address) 
 {
 	// TODO: implement the case when the <expression> is not a label.
+	char *label = (instruction.operand_fields)[0];
+	char *cond = parse_cond(instruction.mnemonic); 
 
 	word_t binary_instruction = get_branch_instruction_template();
 
