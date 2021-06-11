@@ -5,7 +5,7 @@ ASSEMBLER_DIRECTORIES = $(sort $(dir $(wildcard ./assembler/*/)))
 ASSEMBLER_FLAGS = $(foreach ASSEMBLER_DIRECTORIES, $(ASSEMBLER_DIRECTORIES), -I$(ASSEMBLER_DIRECTORIES)) -Iassembler
 CFLAGS  = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic  
 EMULATOR_LDLIBS = -Lemulator/data_processing -ldata_processing -Lemulator/multiply -lmultiply -Lemulator/branch -lbranch -Lemulator/single_data_transfer -lsingle_data_transfer -Lemulator/cond -lcond -Lemulator/common_functions -lcommon -Lemulator/gpio -lgpio
-ASSEMBLER_LDLIBS  =  -Lassembler/data_processing -ldata_processing -Lassembler/multiply -lmultiply -Lassembler/single_data_transfer -lsingle_data_transfer -Lassembler/branch -lbranch 
+ASSEMBLER_LDLIBS  =  -Lassembler/data_processing -ldata_processing -Lassembler/multiply -lmultiply -Lassembler/single_data_transfer -lsingle_data_transfer -Lassembler/branch -lbranch -lspecial -Lassembler/special 
 BUILD   = libs assemble emulate
 
 .SUFFIXES: .c .o

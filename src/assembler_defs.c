@@ -62,6 +62,12 @@ mnemonic get_Mnemonic (char *m){
 	else if (strcmp(m, "bge") == 0){
 		return (mnemonic) BGE;
 	}
+	else if (strcmp(m, "bgt") == 0){
+		return (mnemonic) BGT;
+	}
+	else if (strcmp(m, "ble") == 0){
+		return (mnemonic) BLE;
+	}
 	else if (strcmp(m, "blt") == 0){
 		return (mnemonic) BLT;
 	}

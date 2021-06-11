@@ -6,8 +6,6 @@
 #include "defns.h"
 #include "assembler_defs.h"
 #include "assembler/assembly_functions.h"
-// #include "multiply.h"
-// #include "assembler/multiply/multiply.h"
 
 
 #define MAX_LINE_LENGTH 512 
@@ -108,21 +106,47 @@ int main(int argc, char **argv) {
 
 	instruction_t **head = instructions;
 	
-	FILE *output = fopen(argv[2], "wb");
+	FILE *file = fopen(argv[2], "wb");
 	
 	for (; (*head) != NULL && (head) != NULL; (head)++) {
-		
-		// word_t word;
-
-		// print_instruction(**head);
-		if (!(strcmp((*head)->mnemonic, "mul")) ||
-			!(strcmp((*head)->mnemonic, "mla"))
-		) {
-			assemble_multiply(**head, output);
+		switch(get_Mnemonic((*head)->mnemonic)) {
+			case (mnemonic) ADD:
+			case (mnemonic) SUB:
+			case (mnemonic) RSB:
+			case (mnemonic) AND:
+			case (mnemonic) EOR:
+			case (mnemonic) ORR:
+			case (mnemonic) MOV:
+			case (mnemonic) TST:
+			case (mnemonic) TEQ:
+			case (mnemonic) CMP:
+				assemble_data_processing(**head, file);
+				break;
+			case (mnemonic) MUL:
+			case (mnemonic) MLA:
+				assemble_multiply(**head, file);
+				break;
+			case (mnemonic) LDR:
+			case (mnemonic) STR:
+				//assemble_single_data_transfer(**head, file);
+				//break;
+			case (mnemonic) BEQ:
+			case (mnemonic) BNE:
+			case (mnemonic) BGE:
+			case (mnemonic) BGT: 
+			case (mnemonic) BLE:
+			case (mnemonic) BLT:
+			case (mnemonic) B:
+				//assemble_branch(**head, file);
+				//break;
+			case (mnemonic) LSL:
+				//assemble_lsl(**head, file);
+				break;
+			case (mnemonic) ANDEQ:
+				assemble_andeq(file);
 		}
 	}
 
-	
 	free_instructions(instructions);
 	free(instructions);
 	free(labels);

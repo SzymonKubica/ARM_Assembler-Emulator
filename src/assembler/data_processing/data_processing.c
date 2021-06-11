@@ -11,40 +11,45 @@ static byte_t parse_numb (char *number) {
 	return strtol(number++, NULL, 0);
 }
 
-/*static word_t get_Operand2 (char *op2) {
-
+static word_t int_to_operand2(word_t val) {
+	word_t curr = val;
+	word_t immediate = 0x0;
+	for(int i = 0; i < 16; i++) {
+		if(immediate >> 8) {
+			printf("invalid operand2:");
+			return -1;
+		}
+		else if(curr == 0) {
+			immediate |= i << 8; 
+			return immediate;
+		}
+		immediate = immediate << 2;
+		immediate |= curr >> 30;
+		curr = curr << 2;
+	}
+	perror("Error: Invalid Operand Value");
+	exit(EXIT_FAILURE);
 }
-*/
+
+// Return operand2 (12 bits) and set 13th bit of returned word
+// to the I value 
+static word_t get_Operand2 (char *op2) {
+	if(op2[0] == '#') {
+		return (1 << 12) | int_to_operand2(parse_numb(op2));
+	}
+	return get_Register(op2);
+}
+
+
 
 static void mov_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
-	
+
 	byte_t Rd = get_Register(instruction.operand_fields[0]);
-	byte_t Rn = 0;
-	
-	byte_t S = 0;
-	byte_t immediate = 0;
-
-	word_t operand2 = 0;
-
-	if (instruction.operand_fields[1][0] == '#') {
-		// constant
-		immediate = 1;
-		operand2 = parse_numb (instruction.operand_fields[1]);
-	} else {
-		// register
-		operand2 = get_Register(instruction.operand_fields[1]);
-	}
-
-	byte_t binary[4] 
-		= {cond | (immediate << 1) | (opCode >> 3),
-		(opCode << 5) | (S << 4) | Rn,
-		(Rd << 4) | operand2 >> 8,
-		operand2
-	};
-
-	for (int i = 3; i >= 0; i--) {
-		fwrite(&binary[i], 1, 1, file);
-	} 
+	word_t operand2 = get_Operand2(instruction.operand_fields[1]);
+	write_to_file(file, cond | ((operand2 >> 12) << 1) | (opCode >> 3), 
+			(opCode << 5),
+			(Rd << 4) | ((operand2 >> 8) & 0xf),
+			operand2);
 }
 
 static void compute_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
@@ -53,7 +58,7 @@ static void compute_instruction (FILE *file, instruction_t instruction, byte_t o
 static void cpsr_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
 }
 
-void data_processing (instruction_t instruction, FILE *file) {
+void assemble_data_processing (instruction_t instruction, FILE *file) {
 	byte_t m = get_Mnemonic(instruction.mnemonic); 
 	switch (m) {
 		case MOV:
