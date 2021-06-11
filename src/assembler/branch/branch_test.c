@@ -30,6 +30,17 @@ void print_binary(word_t word) {
 	printf("\n");
 }
 
+word_t get_word(byte_t buffer[4]) {
+	word_t result = 0;
+	for (int i = 0; i < 4; i++) {
+		result |= buffer[3 - i];
+		if (i != 3 ) {
+			result <<= 8;
+		}
+	}
+	return result;
+}
+
 // This test case simulates the assembly of a bne loop instruction from p17.
 void test1() {
 
@@ -46,11 +57,24 @@ void test1() {
 	symbol_table_init(table);
 	add_entry(table, operand_fields[0], loop_address);
 
-	word_t result = 
-		assemble_branch(instruction, table, current_address);
+	FILE *file;
+	file = fopen("test.bin", "wb");
+
+	if (file) {
+		assemble_branch(instruction, file, table, current_address);
+	}
+
+	fclose(file);
+
+	FILE *file_read;
+	file_read = fopen("test.bin", "rb");
+
+	byte_t buffer[4];
+	fread(buffer, sizeof(buffer), 1, file_read);
+	word_t result = get_word(buffer);
 
 	// Prints the result in the same format as on p17 in the spec.
-	//print_binary(result);
+	print_binary(result);
 
 	testcond(result == 0x1afffffa, "case: bne loop");
 	table_destroy(table);

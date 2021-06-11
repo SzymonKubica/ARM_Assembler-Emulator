@@ -5,7 +5,8 @@
  * Branch Instructions Assembler module.
  */
 
-word_t assemble_branch(
+void assemble_branch(
 	instruction_t instruction,
+	FILE *file,
 	symbol_table_t *table,
 	int current_address);

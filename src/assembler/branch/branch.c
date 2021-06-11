@@ -1,6 +1,8 @@
+#include <assert.h>
+#include <stdio.h>
+
 #include "../../assembler_defs.h"
 #include "branch.h"
-#include <assert.h>
 
 /*
  * Branch Instructions Assembler module: implementation
@@ -8,6 +10,8 @@
 
 #define cond_offset 28
 #define pipeline_offset 8
+#define byte_length 8
+#define bytes_in_a_word 4
 
 // Possible values of the Cond field.
 #define eq 0
@@ -94,8 +98,22 @@ static char * parse_cond(char *mnemonic) {
 		
 }
 
-word_t assemble_branch(
+// Returns nth byte in a word instruction, byte indices start at 1.
+byte_t get_Nth_byte(int n, word_t word) {
+	return (byte_t) (word >> ((bytes_in_a_word - n) * byte_length));
+}
+
+// Writes to the file in little Endian.
+void write_word(word_t word, FILE *file) {
+	fputc(get_Nth_byte(4, word), file);
+	fputc(get_Nth_byte(3, word), file);
+	fputc(get_Nth_byte(2, word), file);
+	fputc(get_Nth_byte(1, word), file);
+}
+
+void assemble_branch(
 	instruction_t instruction,
+	FILE *file,
 	symbol_table_t *table, 
 	int current_address) 
 {
@@ -117,5 +135,5 @@ word_t assemble_branch(
 
 	set_offset(&binary_instruction, offset_24_bits);
 
-	return binary_instruction;
+	write_word(binary_instruction, file);
 }
