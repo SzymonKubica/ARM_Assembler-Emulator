@@ -100,125 +100,14 @@ void run_test(
 
 }
 
-// This test case simulates the assembly of a bne loop instruction from p17.
-void test1() {
-
-	// Initialising arguments.
-	char *mnemonic = "bne";
-	char **operand_fields = (char **) calloc(4, sizeof(char *));
-	operand_fields[0] = "loop";
-	instruction_t instruction = {mnemonic, operand_fields};
-	int loop_address = 0x8;
-	int current_address = 0x18; 
-
-	// Populating symbol table.
-	symbol_table_t *table = malloc(sizeof(symbol_table_t));
-	symbol_table_init(table);
-	add_entry(table, operand_fields[0], loop_address);
-
-	FILE *file;
-	file = fopen("test1.bin", "wb");
-
-	if (file) {
-		assemble_branch(instruction, file, table, current_address);
-	}
-
-	fclose(file);
-
-	FILE *file_read;
-	file_read = fopen("test1.bin", "rb");
-
-	byte_t buffer[4];
-	fread(buffer, sizeof(buffer), 1, file_read);
-	word_t result = get_word(buffer);
-
-	// Prints the result in the same format as on p17 in the spec.
-	print_binary(result);
-
-	testcond(result == 0x1afffffa, "case: bne loop");
-	table_destroy(table);
-}
-
-// This test case simulates the assembly of a b foo instruction from test suite.
-void test2() {
-
-	// Initialising arguments.
-	char *mnemonic = "b";
-	char **operand_fields = malloc(sizeof(char *));
-	operand_fields[0] = "foo";
-	instruction_t instruction = {mnemonic, operand_fields};
-	int foo_address = 0xc;
-	int current_address = 0x4; 
-
-	// Populating symbol table.
-	symbol_table_t *table = malloc(sizeof(symbol_table_t));
-	symbol_table_init(table);
-	add_entry(table, operand_fields[0], foo_address);
-
-	FILE *file;
-	file = fopen("test2.bin", "wb");
-
-	if (file) {
-		assemble_branch(instruction, file, table, current_address);
-	}
-
-	fclose(file);
-
-	FILE *file_read;
-	file_read = fopen("test2.bin", "rb");
-
-	byte_t buffer[4];
-	fread(buffer, sizeof(buffer), 1, file_read);
-	word_t result = get_word(buffer);
-
-	// Prints the result in the same format as on p17 in the spec.
-	print_binary(result);
-
-	testcond(result == 0xea000000, "case: b foo");
-	table_destroy(table);
-}
-
-// This test case simulates the assembly of a beq foo instruction from test suite.
-void test3() {
-
-	// Initialising arguments.
-	char *mnemonic = "beq";
-	char **operand_fields = malloc(sizeof(char *));
-	operand_fields[0] = "foo";
-	instruction_t instruction = {mnemonic, operand_fields};
-	int foo_address = 0x14;
-	int current_address = 0xc; // Instruction is at 0x18, offset due to pipeline.
-
-	// Populating symbol table.
-	symbol_table_t *table = malloc(sizeof(symbol_table_t));
-	symbol_table_init(table);
-	add_entry(table, operand_fields[0], foo_address);
-
-	FILE *file;
-	file = fopen("test3.bin", "wb");
-
-	if (file) {
-		assemble_branch(instruction, file, table, current_address);
-	}
-
-	fclose(file);
-
-	FILE *file_read;
-	file_read = fopen("test3.bin", "rb");
-
-	byte_t buffer[4];
-	fread(buffer, sizeof(buffer), 1, file_read);
-	word_t result = get_word(buffer);
-
-	// Prints the result in the same format as on p17 in the spec.
-	print_binary(result);
-
-	testcond(result == 0xea000000, "case: b foo");
-	table_destroy(table);
-}
-
 int main(void) {
+
+	// This test case simulates the assembly of a bne loop instruction from p17.
 	run_test("bne loop", "bne", "loop", "test_binaries/test1.bin", 0x8, 0x18, 0x1afffffa, false);
+
+	// This test case simulates the assembly of a b foo instruction from test suite.
 	run_test("b foo", "b", "foo", "test_binaries/test2.bin", 0xc, 0x4, 0xea000000, false);
+
+	// This test case simulates the assembly of a beq foo instruction from test suite.
 	run_test("beq foo", "beq", "foo", "test_binaries/test3.bin", 0x14, 0xc, 0xa000000, false);
 }
