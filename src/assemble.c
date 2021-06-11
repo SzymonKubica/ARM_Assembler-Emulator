@@ -11,24 +11,18 @@
 #define MAX_LINE_LENGTH 512 
 #define MAX_NUM_INSTRUCTIONS (65536 / 4)
 
-typedef struct {
-	char *label;
-	int  address; 
-} label_t;
-
-void parse_first (label_t **labels_p, instruction_t **instructions_p, char *arg) {
+void parse_first (symbol_table_t *table, instruction_t **instructions_p, char *arg) {
 	FILE *file;
 	file = fopen(arg,"r");
 	char line[MAX_LINE_LENGTH]; 
 	int address = 0;
 	instruction_t **instructions = instructions_p;
-	label_t **labels = labels_p;
 
 	if(file) {
 		while (fgets(line, sizeof(line), file)) {
 			if (strchr(line, ':') != NULL) {
-				// *labels = (label_t) { .label = strtok(line, ":"), .address = address};
-				 labels++; 
+				char *label = strtok(line, ":");
+				add_entry(table, label, address);
 			} else {
 				char *mnemonic = strtok(line, " ,\n");
 				char **operand_fields = (char**) calloc (4, sizeof(char *));
@@ -97,16 +91,21 @@ int main(int argc, char **argv) {
 
 	instruction_t **instructions = calloc(MAX_NUM_INSTRUCTIONS, sizeof(instruction_t *));
 	assert(instructions != NULL);
-	label_t **labels = calloc(MAX_NUM_INSTRUCTIONS, sizeof(label_t *));
-	assert(labels != NULL);
+
+	symbol_table_t *table = malloc(sizeof(symbol_table_t));
+	assert(table != NULL);
+
+	symbol_table_init(table);
 	
-	parse_first (labels, instructions, assembly);
+	parse_first (table, instructions, assembly);
 
 	instruction_t **head = instructions;
 	
 	FILE *file = fopen(argv[2], "wb");
+
+	int address = 0;
 	
-	for (; (*head) != NULL && (head) != NULL; (head)++) {
+	for (; (*head) != NULL && (head) != NULL; (head)++, address += 4) {
 		switch(get_Mnemonic((*head)->mnemonic)) {
 			case (mnemonic) ADD:
 			case (mnemonic) SUB:
@@ -135,8 +134,8 @@ int main(int argc, char **argv) {
 			case (mnemonic) BLE:
 			case (mnemonic) BLT:
 			case (mnemonic) B:
-				//assemble_branch(**head, file);
-				//break;
+				assemble_branch(**head, file, table, address);
+				break;
 			case (mnemonic) LSL:
 				//assemble_lsl(**head, file);
 				break;
@@ -147,7 +146,7 @@ int main(int argc, char **argv) {
 
 	free_instructions(instructions);
 	free(instructions);
-	free(labels);
+	table_destroy(table);
 
 	return EXIT_SUCCESS;
 }

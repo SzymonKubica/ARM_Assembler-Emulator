@@ -19,7 +19,6 @@ static symbol_table_entry_t * alloc_entry(void) {
 }
 
 static symbol_table_entry_t * new_entry(char *label, int address) {
-
 	symbol_table_entry_t *entry = alloc_entry();
 
 	entry->label = label;
@@ -38,12 +37,25 @@ void symbol_table_init(symbol_table_t *table) {
 	table->head = alloc_entry();
 }
 
+/*
+// For debugging purposes.
+static void print_table(symbol_table_t *table) {
+	for (int i = 0; i < table->size; i++) {
+		symbol_table_entry_t *current_entry = table->head->next;
+		printf("%d. label: %s, address: %d\n", (i + 1), current_entry->label, current_entry->address); 
+	}
+}
+*/
+
 bool add_entry(symbol_table_t *table, char *label, int address){
+	char *label_str = malloc(strlen(label));
+	strncpy(label_str, label, strlen(label));
+
 	symbol_table_entry_t *current_entry = table->head;	
 	symbol_table_entry_t *successor_entry = current_entry->next; 
 
 	while(successor_entry) {
-		if (strncmp(successor_entry->label, label, strlen(label)) == 0) {
+		if (strncmp(successor_entry->label, label_str, strlen(label_str)) == 0) {
 			// Label already present in the symbol_table.
 			return false;
 		}
@@ -52,7 +64,7 @@ bool add_entry(symbol_table_t *table, char *label, int address){
 	}
 
 	assert(successor_entry == NULL);
-	successor_entry = new_entry(label, address);
+	successor_entry = new_entry(label_str, address);
 	current_entry->next = successor_entry;
 	table->size = table->size + 1;
 	return true;
@@ -82,8 +94,8 @@ void table_destroy(symbol_table_t *table) {
 	symbol_table_entry_t *current_entry = table->head;
 
 	while(current_entry) {
-	symbol_table_entry_t *next_entry = current_entry->next;
-	free_symbol_table_entry(current_entry);
-	current_entry = next_entry;
+		symbol_table_entry_t *next_entry = current_entry->next;
+		free_symbol_table_entry(current_entry);
+		current_entry = next_entry;
 	}
 }
