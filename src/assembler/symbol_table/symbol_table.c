@@ -98,4 +98,6 @@ void table_destroy(symbol_table_t *table) {
 		free_symbol_table_entry(current_entry);
 		current_entry = next_entry;
 	}
+
+	free(table);
 }
