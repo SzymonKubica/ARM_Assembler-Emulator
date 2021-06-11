@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 #include "defns.h"
-#include "./emulator/emulator_functions.h"
+#include "emulator/emulator_functions.h"
 
 #define PC 15
 #define CPSR 16
