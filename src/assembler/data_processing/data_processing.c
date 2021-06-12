@@ -7,17 +7,10 @@
 
 #define cond (0xe << 4)
 
-static byte_t parse_numb (char *number) {
-	return strtol(++number, NULL, 0);
-}
-
 static word_t int_to_operand2(word_t val) {
-	if(val <= 0xff) {
-		return val;
-	}
+	word_t curr = val & (~0xff);
+	word_t immediate = val & 0xff;
 	
-	word_t curr = val;
-	word_t immediate = 0x0;
 	for(int i = 0; i < 16; i++) {
 		if(immediate >> 8) {
 			printf("invalid operand2:");
@@ -35,31 +28,63 @@ static word_t int_to_operand2(word_t val) {
 	exit(EXIT_FAILURE);
 }
 
-// Return operand2 (12 bits) and set 13th bit of returned word
-// to the I value 
+static byte_t get_shift(char *op2) {
+	if (strcmp(op2, "lsl") == 0){
+		return 1;
+	}
+	else if (strcmp(op2, "lsr") == 0){
+		return 2;
+	}
+	else if (strcmp(op2, "asr") == 0){
+		return 3;
+	}
+	else if (strcmp(op2, "ror") == 0){
+		return 4;
+	}
+	return 0; 
+}
+
+// Return operand2 (12 bits) and set 13th bit of returned word to the I value 
 static word_t get_Operand2 (char *op2) {
+	char *shift = strtok(op2, " "); 
+	byte_t shift_type = get_shift(shift);
 	if(op2[0] == '#') {
-		return (1 << 12) | int_to_operand2(parse_numb(op2));
+		return ((1 << 12) | int_to_operand2(strtol(++op2, NULL, 0)));
+	} else if(shift_type) {
+		shift = strtok(NULL, " ");
+		if(shift[0] == 'r') {
+			return ((get_Register(shift) << 4) | (--shift_type << 1) | 1); 
+		} 
+		return ((strtol(++op2, NULL, 0) << 3) | (--shift_type << 1));
 	}
 	return get_Register(op2);
 }
 
 
-
-static void mov_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
-
-	byte_t Rd = get_Register(instruction.operand_fields[0]);
-	word_t operand2 = get_Operand2(instruction.operand_fields[1]);
-	write_to_file(file, cond | ((operand2 >> 12) << 1) | (opCode >> 3), 
-			(opCode << 5),
+static void write_instruction(FILE *file, byte_t I, byte_t opCode, byte_t S, byte_t Rn, byte_t Rd, word_t operand2) {
+	write_to_file(file, cond | (I << 1) | (opCode >> 3), 
+			(opCode << 5) | (S << 4) | Rn,
 			(Rd << 4) | ((operand2 >> 8) & 0xf),
 			operand2);
 }
 
+static void mov_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
+	byte_t Rd = get_Register(instruction.operand_fields[0]);
+	word_t operand2 = get_Operand2(instruction.operand_fields[1]);
+	write_instruction(file, operand2 >> 12, opCode, 0x0, 0x0, Rd, operand2); 
+}
+
 static void compute_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
+	byte_t Rd = get_Register(instruction.operand_fields[0]);
+	byte_t Rn = get_Register(instruction.operand_fields[1]);
+	word_t operand2 = get_Operand2(instruction.operand_fields[2]);
+	write_instruction(file, operand2 >> 12, opCode, 0x0, Rn, Rd, operand2); 
 }
 
 static void cpsr_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
+	byte_t Rn = get_Register(instruction.operand_fields[0]);
+	word_t operand2 = get_Operand2(instruction.operand_fields[1]);
+	write_instruction(file, operand2 >> 12, opCode, 0x1, Rn, 0x0, operand2); 	
 }
 
 void assemble_data_processing (instruction_t instruction, FILE *file) {

@@ -26,5 +26,3 @@ void assemble_multiply(instruction_t instruction, FILE *file) {
 	}
 	write_to_file(file, firstByte, secondByte, thirdByte, fourthByte);
 }
-
-
