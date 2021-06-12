@@ -40,6 +40,12 @@ void parse_first (label_t **labels_p, instruction_t **instructions_p, char *arg)
 					char *string = malloc (sizeof (char) *MAX_LINE_LENGTH);
 					strcpy(string, token);
 
+					if (get_shift (string)) {
+						token = strtok(NULL, " ,\n");	
+						strcat(string, " ");
+						strcat(string, token);
+					}
+
 					operand_fields[i] = string;
 					
 					token = strtok(NULL, " ,\n");
@@ -147,6 +153,8 @@ int main(int argc, char **argv) {
 							string};	
 				instruction_t lsl = (instruction_t) {.mnemonic = "mov", .operand_fields = op_fields}; 
 				assemble_data_processing(lsl, file);
+
+				free(string);
 				break;
 				}
 			case (mnemonic) ANDEQ:

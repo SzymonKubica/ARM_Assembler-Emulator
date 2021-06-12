@@ -5,4 +5,6 @@
 
 void assemble_data_processing (instruction_t instruction, FILE *file);
 
+byte_t get_shift (char *);
+
 #endif

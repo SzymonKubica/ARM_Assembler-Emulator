@@ -28,7 +28,7 @@ static word_t int_to_operand2(word_t val) {
 	exit(EXIT_FAILURE);
 }
 
-static byte_t get_shift(char *op2) {
+byte_t get_shift(char *op2) {
 	if (strcmp(op2, "lsl") == 0){
 		return 1;
 	}
