@@ -11,11 +11,17 @@
 #define MAX_LINE_LENGTH 512 
 #define MAX_NUM_INSTRUCTIONS (65536 / 4)
 
-void parse_first (symbol_table_t *table, instruction_t **instructions_p, char *arg) {
+void parse_first (
+	symbol_table_t *table, 
+	instruction_t **instructions_p, 
+	int *num_instructions, 
+	char *arg) 
+{
 	FILE *file;
 	file = fopen(arg,"r");
 	char line[MAX_LINE_LENGTH]; 
 	int address = 0;
+	*num_instructions = 0;
 	instruction_t **instructions = instructions_p;
 
 	if(file) {
@@ -56,6 +62,7 @@ void parse_first (symbol_table_t *table, instruction_t **instructions_p, char *a
 				*instructions = inst;
 				// printf("%s",(*instructions_p)->mnemonic);
 				instructions++;
+				*num_instructions = *num_instructions + 1;
 			}
 			address+= 4;
 		}
@@ -86,6 +93,10 @@ void free_instructions(instruction_t **instructions) {
 
 }
 
+int get_end_address(int num_instructions, int num_appended) {
+	return 4 * (num_instructions + num_appended - 1);
+}
+
 int main(int argc, char **argv) {
 	setbuf(stdout, NULL);
 	if (argc != 3) {
@@ -101,9 +112,15 @@ int main(int argc, char **argv) {
 	symbol_table_t *table = malloc(sizeof(symbol_table_t));
 	assert(table != NULL);
 
+	char *appended_memory = malloc(MAX_NUM_INSTRUCTIONS * 4);
+	char *appended_memory_ptr = appended_memory;
+	int num_instructions;
+	int num_appended;
+	int end_address;
+
 	symbol_table_init(table);
 	
-	parse_first (table, instructions, assembly);
+	parse_first (table, instructions, &num_instructions, assembly);
 
 	instruction_t **head = instructions;
 	
@@ -131,7 +148,14 @@ int main(int argc, char **argv) {
 				break;
 			case (mnemonic) LDR:
 			case (mnemonic) STR:
-				assemble_single_data_transfer(**head, file);
+				end_address = get_end_address(num_instructions, num_appended);
+				assemble_single_data_transfer(
+					**head, 
+					file, 
+					address, 
+					end_address, 
+					appended_memory_ptr,
+					&num_appended);
 				break;
 			case (mnemonic) BEQ:
 			case (mnemonic) BNE:
@@ -159,6 +183,15 @@ int main(int argc, char **argv) {
 			case (mnemonic) ANDEQ:
 				assemble_andeq(file);
 		}
+	}
+
+	// Additional memory addresses created by ldr with large arguments is appended.
+	for (; *appended_memory_ptr != 0; appended_memory_ptr+=4) {
+		// Ensures that an entire word is loaded into the memory.
+		fputc(appended_memory_ptr[0], file);
+		fputc(appended_memory_ptr[1], file);
+		fputc(appended_memory_ptr[2], file);
+		fputc(appended_memory_ptr[3], file);
 	}
 
 	free_instructions(instructions);

@@ -6,8 +6,9 @@
 #include "../../defns.h"
 #include "../../assembler_defs.h"
 #include "single_data_transfer.h"
+#include "data_processing.h"
 
-#define PC 15;
+#define PC 15
 #define byte_length 8
 #define bytes_in_a_word 4
 
@@ -130,19 +131,21 @@ static int parse_offset_by_expression(char *address) {
 	return atoi(offset_representation);
 }
 
-/*
 static int parse_argument(char *address) {
 	assert(address[0] == '=');
 	// Initialising ptr to point to the first digit.
 	char *ptr = address + 1;
+	if (address[2] == 'x') {
+		// Address is in hexadecimal.
+		return strtoul(ptr, NULL, 16);
+	}
 	return atoi(ptr);
 }
-*/
 
 static char * get_address(char **operand_fields) {
 	char *address = malloc(20);
 	char *address_ptr = address;
-	for (int i = 0; i < 4; i++) {
+	for (int i = 1; i < 4; i++) {
 		char *ptr = operand_fields[i];
 		while (ptr != 0 && *ptr != '\0') {
 			*address_ptr = *ptr; 
@@ -167,7 +170,21 @@ static void write_word(word_t word, FILE *file) {
 	fputc(get_Nth_byte(1, word), file);
 }
 
-word_t assemble_single_data_transfer(instruction_t instruction, FILE *file) {
+static void write_to_appended_memory(word_t word, char *appended_memory_ptr) {
+	for (int i = 4; i >= 1; i--) {
+		*appended_memory_ptr = get_Nth_byte(i, word);
+		appended_memory_ptr++;
+	}
+}
+
+void assemble_single_data_transfer(
+	instruction_t instruction, 
+	FILE *file, 
+	int current_address, 
+	int end_address,
+	char *appended_memory,
+	int *num_appended)
+{
 
 	char *mnemonic = instruction.mnemonic;
 	int Rd = get_Register(instruction.operand_fields[0]);
@@ -180,15 +197,20 @@ word_t assemble_single_data_transfer(instruction_t instruction, FILE *file) {
 	if (is_ldr_instruction(mnemonic)) {
 		set_L_bit(&result);
 
-		// TODO: finish this once hepler functions are working.
 		// A numeric constant of the form: <=expression> (ldr only).
 		if (address[0] == '=') {
-		/*
-			int argument = parse_argument(address);
+			word_t argument = parse_argument(address);
 			if (argument <= 0xff) {
 				// According to the spec we should use mov instead.
 				// as the argument fits inside the argument of mov.
-				return assemble_data_processing( arguments for mov );
+				// We perform an assembly of mov instead.  
+				char *altered_address = malloc(strlen(address));
+				strncpy(altered_address, address, strlen(address));
+				altered_address[0] = '#';
+				instruction_t instruction_as_mov = {"mov", instruction.operand_fields};
+				instruction_as_mov.operand_fields[1] = altered_address;
+				assemble_data_processing(instruction_as_mov, file);
+				return;
 			} else {
 				// The argument doesn't fit, putting the value of <expression> 
 				// at the end of the assembled program 
@@ -196,12 +218,14 @@ word_t assemble_single_data_transfer(instruction_t instruction, FILE *file) {
 				// write_to_memory(end_address, (word_t argument));
 				// According to the spec: always pre-indexed:
 				set_P_bit(&result);
+				set_U_bit(&result);
 				set_Rn(&result, PC);
-				int current_address = get_current_address();
-				set_offset(&result, end_address - current_address);
-				return result;
+				set_offset(&result, end_address - current_address - 4);
+				write_word(result, file);
+				write_to_appended_memory(argument, appended_memory);
+				*num_appended = *num_appended + 1;
+				return;
 			}
-		*/
 		}
 	}
 
@@ -232,6 +256,5 @@ word_t assemble_single_data_transfer(instruction_t instruction, FILE *file) {
 		// TODO (optional): post-indexint case: [Rn],{+/-} Rm{, <shift>}.
 	}
 	write_word(result, file);
-	return result;
 }
 	
