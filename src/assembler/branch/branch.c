@@ -98,7 +98,7 @@ static void set_offset(word_t *instruction, word_t offset) {
 }
 
 // Returns nth byte in a word instruction, byte indices start at 1.
-byte_t get_Nth_byte(int n, word_t word) {
+static byte_t get_Nth_byte(int n, word_t word) {
 	return (byte_t) (word >> ((bytes_in_a_word - n) * byte_length));
 }
 

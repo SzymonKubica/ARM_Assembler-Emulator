@@ -155,12 +155,12 @@ static char * get_address(char **operand_fields) {
 }
 
 // Returns nth byte in a word instruction, byte indices start at 1.
-byte_t get_Nth_byte(int n, word_t word) {
+static byte_t get_Nth_byte(int n, word_t word) {
 	return (byte_t) (word >> ((bytes_in_a_word - n) * byte_length));
 }
 
 // Writes to the file in little Endian.
-void write_word(word_t word, FILE *file) {
+static void write_word(word_t word, FILE *file) {
 	fputc(get_Nth_byte(4, word), file);
 	fputc(get_Nth_byte(3, word), file);
 	fputc(get_Nth_byte(2, word), file);

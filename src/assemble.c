@@ -131,8 +131,8 @@ int main(int argc, char **argv) {
 				break;
 			case (mnemonic) LDR:
 			case (mnemonic) STR:
-				//assemble_single_data_transfer(**head, file);
-				//break;
+				assemble_single_data_transfer(**head, file);
+				break;
 			case (mnemonic) BEQ:
 			case (mnemonic) BNE:
 			case (mnemonic) BGE:
