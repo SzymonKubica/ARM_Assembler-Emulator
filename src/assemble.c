@@ -142,7 +142,8 @@ int main(int argc, char **argv) {
 				char *string = malloc(5 * sizeof(char));
 				strcpy(string, "lsl ");
 				strcat(string, (*head)->operand_fields[1]);
-				char *op_fields[3] = { (*head)->operand_fields[0],
+				char *op_fields[4] = { (*head)->operand_fields[0],
+							(*head)->operand_fields[0],
 							string};	
 				instruction_t lsl = (instruction_t) {.mnemonic = "mov", .operand_fields = op_fields}; 
 				assemble_data_processing(lsl, file);

@@ -45,17 +45,39 @@ static byte_t get_shift(char *op2) {
 }
 
 // Return operand2 (12 bits) and set 13th bit of returned word to the I value 
-static word_t get_Operand2 (char *op2) {
+static word_t get_Operand2 (instruction_t instruction) {
+	
+	char *op2 = instruction.operand_fields[0];
+	byte_t Rm = 0;
+
+	int i = 1;
+	
+	for (; instruction.operand_fields[i] != NULL && i < 4; i++){
+		op2 = instruction.operand_fields[i];
+
+		if (instruction.operand_fields[i][0] != 'r'
+		&& instruction.operand_fields[i][0] != '#'
+		) {
+			Rm = get_Register(instruction.operand_fields[i - 1]);
+			break;
+		}
+	}
+
 	char *shift = strtok(op2, " "); 
 	byte_t shift_type = get_shift(shift);
+
 	if(op2[0] == '#') {
 		return ((1 << 12) | int_to_operand2(strtol(++op2, NULL, 0)));
 	} else if(shift_type) {
+		// shift
 		shift = strtok(NULL, " ");
 		if(shift[0] == 'r') {
-			return ((get_Register(shift) << 4) | (--shift_type << 1) | 1); 
+			return ((get_Register(shift) << 8) | (--shift_type << 5) | (1 << 4) | Rm); 
 		} 
-		return ((strtol(++op2, NULL, 0) << 3) | (--shift_type << 1));
+
+		// constant
+
+		return (strtol(++shift, NULL, 0) << 7) | (--shift_type << 5) | Rm;
 	}
 	return get_Register(op2);
 }
@@ -70,20 +92,20 @@ static void write_instruction(FILE *file, byte_t I, byte_t opCode, byte_t S, byt
 
 static void mov_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
 	byte_t Rd = get_Register(instruction.operand_fields[0]);
-	word_t operand2 = get_Operand2(instruction.operand_fields[1]);
+	word_t operand2 = get_Operand2(instruction);
 	write_instruction(file, operand2 >> 12, opCode, 0x0, 0x0, Rd, operand2); 
 }
 
 static void compute_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
 	byte_t Rd = get_Register(instruction.operand_fields[0]);
 	byte_t Rn = get_Register(instruction.operand_fields[1]);
-	word_t operand2 = get_Operand2(instruction.operand_fields[2]);
+	word_t operand2 = get_Operand2(instruction);
 	write_instruction(file, operand2 >> 12, opCode, 0x0, Rn, Rd, operand2); 
 }
 
 static void cpsr_instruction (FILE *file, instruction_t instruction, byte_t opCode) {
 	byte_t Rn = get_Register(instruction.operand_fields[0]);
-	word_t operand2 = get_Operand2(instruction.operand_fields[1]);
+	word_t operand2 = get_Operand2(instruction);
 	write_instruction(file, operand2 >> 12, opCode, 0x1, Rn, 0x0, operand2); 	
 }
 
