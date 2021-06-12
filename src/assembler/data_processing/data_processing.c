@@ -28,11 +28,34 @@ static word_t int_to_operand2(word_t val) {
 	exit(EXIT_FAILURE);
 }
 
-// Return operand2 (12 bits) and set 13th bit of returned word
-// to the I value 
+static byte_t get_shift(char *op2) {
+	if (strcmp(op2, "lsl") == 0){
+		return 1;
+	}
+	else if (strcmp(op2, "lsr") == 0){
+		return 2;
+	}
+	else if (strcmp(op2, "asr") == 0){
+		return 3;
+	}
+	else if (strcmp(op2, "ror") == 0){
+		return 4;
+	}
+	return 0; 
+}
+
+// Return operand2 (12 bits) and set 13th bit of returned word to the I value 
 static word_t get_Operand2 (char *op2) {
+	char *shift = strtok(op2, " "); 
+	byte_t shift_type = get_shift(shift);
 	if(op2[0] == '#') {
 		return ((1 << 12) | int_to_operand2(strtol(++op2, NULL, 0)));
+	} else if(shift_type) {
+		shift = strtok(NULL, " ");
+		if(shift[0] == 'r') {
+			return ((get_Register(shift) << 4) | (--shift_type << 1) | 1); 
+		} 
+		return ((strtol(++op2, NULL, 0) << 3) | (--shift_type << 1));
 	}
 	return get_Register(op2);
 }
