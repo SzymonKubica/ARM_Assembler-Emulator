@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "../../assembler_defs.h"
 #include "branch.h"
@@ -26,9 +27,13 @@ static word_t get_branch_instruction_template(void) {
 	return 0x5 /* 101 */ << 25;
 }
 
-static nibble_t get_cond(char *cond) {
-	char first_letter = cond[0];
-	char second_letter = cond[1];
+static nibble_t get_cond(char *mnemonic) {
+	assert(*mnemonic == 'b');
+	if (strlen(mnemonic) == 1) {
+		return al;
+	}
+	char first_letter = mnemonic[1];
+	char second_letter = mnemonic[2];
 
 	if (first_letter == 'e') {
 		// cond == "eq"
@@ -68,7 +73,7 @@ static void set_cond(word_t *instruction, nibble_t cond) {
 }
 
 static word_t compute_offset(int offset) {
-	if (offset > 0) {
+	if (offset >= 0) {
 		// Positive value - no sign adjustment needed.
 		// Excess 0s are truncated.
 		return offset >> 2;
@@ -92,12 +97,6 @@ static void set_offset(word_t *instruction, word_t offset) {
 	*instruction |= offset;
 }
 
-static char * parse_cond(char *mnemonic) {
-	assert(*mnemonic == 'b');
-	return mnemonic + 1;
-		
-}
-
 // Returns nth byte in a word instruction, byte indices start at 1.
 byte_t get_Nth_byte(int n, word_t word) {
 	return (byte_t) (word >> ((bytes_in_a_word - n) * byte_length));
@@ -119,13 +118,12 @@ void assemble_branch(
 {
 	// TODO: implement the case when the <expression> is not a label.
 	char *label = (instruction.operand_fields)[0];
-	char *cond = parse_cond(instruction.mnemonic); 
+	nibble_t cond = get_cond(instruction.mnemonic); 
 
 	word_t binary_instruction = get_branch_instruction_template();
 
-	nibble_t cond_binary = get_cond(cond);
 
-	set_cond(&binary_instruction, cond_binary);
+	set_cond(&binary_instruction, cond);
 
 	int destination_address = get_address(table, label);
 
