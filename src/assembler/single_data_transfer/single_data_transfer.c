@@ -38,6 +38,10 @@ static void set_Rn(word_t *binary_instruction, int Rn) {
 	*binary_instruction |= (Rn << 16);
 }
 
+static void set_Rm(word_t *binary_instruction, int Rm) {
+	*binary_instruction |= Rm;
+}
+
 static void set_offset(word_t *binary_instruction, int offset) {
 	*binary_instruction |= abs(offset);
 }
@@ -74,16 +78,8 @@ static bool is_digit(char ch) {
 	return '0' <= ch && ch <= '9';
 }
 
-static int parse_base_register_number(char *address) {
-	char *ptr = address;
-	// Parses throught the address string until finds the first 'r'
-	// That 'r' indicates the reference to the base register.
-	while (*ptr != 'r') {
-		ptr++;
-	}
-	assert(*ptr == 'r');
-	// ptr is adjusted to point to the first digit.
-	ptr++;
+static int parse_register_number(char *str) {
+	char *ptr = str;
 	if (!is_digit(*(ptr + 1))) {
 		char register_digit[1];
 		register_digit[0] = *ptr;
@@ -94,6 +90,19 @@ static int parse_base_register_number(char *address) {
 		register_digit[1] = *(ptr + 1);
 		return atoi(register_digit);
 	}
+}
+
+static int parse_base_register_number(char *address) {
+	char *ptr = address;
+	// Parses throught the address string until finds the first 'r'
+	// That 'r' indicates the reference to the base register.
+	while (*ptr != 'r') {
+		ptr++;
+	}
+	assert(*ptr == 'r');
+	// ptr is adjusted to point to the first digit.
+	ptr++;
+	return parse_register_number(ptr);
 }
 
 static bool is_offset_by_expression(char *address) {
@@ -107,6 +116,38 @@ static bool is_offset_by_expression(char *address) {
 	return false;
 }
 
+static int parse_index_register_number(char *address) {
+	assert(!is_offset_by_expression(address));
+	// Parses throught the address string until finds the first 'r'
+	// That 'r' indicates the reference to the base register.
+	char *ptr = address;
+	while (*ptr != 'r') {
+		ptr++;
+	}
+	assert(*ptr == 'r');
+	// ptr is adjusted to point to the next character. 
+	ptr++;
+	// Parses throught the address string until finds the second 'r'
+	// That 'r' indicates the reference to the index register.
+	while (*ptr != 'r') {
+		ptr++;
+	}
+	// ptr is adjusted to point to the first digit.
+	ptr++;
+	return parse_register_number(ptr);
+}
+
+static bool is_hex_string(char *str) {
+	char *ptr = str;
+	while (*ptr != '\0') {
+		if (*ptr == 'x') {
+			return true;
+		}
+		ptr++;
+	}
+	return false;
+}
+
 static int parse_offset_by_expression(char *address) {
 	assert(is_offset_by_expression(address));
 	char *ptr = address;
@@ -116,19 +157,12 @@ static int parse_offset_by_expression(char *address) {
 	assert(*ptr == '#');
 	// Adjusting ptr so that it points to the first digit or '-' character.
 	ptr++;
-	char *first_digit = ptr;
-	int length_of_offset_decimal_representation = 0;
-	while (is_digit(*ptr) || *ptr == '-') {
-		length_of_offset_decimal_representation++;
-		ptr++;
+	if (is_hex_string(ptr)) {
+		// The number is in hexadecimal.
+		return strtoul(ptr, NULL, 16);
+	} else {
+		return atoi(ptr);
 	}
-	char offset_representation[length_of_offset_decimal_representation + 1]; 
-	for (int i = 0; i < length_of_offset_decimal_representation; i++) {
-		offset_representation[i] = *first_digit;
-		first_digit++;
-	} 
-	offset_representation[length_of_offset_decimal_representation] = '\0';
-	return atoi(offset_representation);
 }
 
 static int parse_argument(char *address) {
@@ -252,6 +286,10 @@ void assemble_single_data_transfer(
 	} else {
 		// Offset by a (shifted) register - I bit is set.
 		set_I_bit(&result);
+		int Rm = parse_index_register_number(address);
+		set_Rm(&result, Rm);
+		// If offset is positive, set Up bit
+		set_U_bit(&result);
 
 		// TODO (optional): pre-indexing case: [Rn, {+/-} Rm{, <shift>}].
 		// TODO (optional): post-indexint case: [Rn],{+/-} Rm{, <shift>}.
