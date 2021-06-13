@@ -80,7 +80,9 @@ int get_address(symbol_table_t *table, char *label) {
 	symbol_table_entry_t *current_entry = table->head->next;
 
 	while(current_entry) {
-		if (strcmp(current_entry->label, label) == 0) {
+		if (strlen(current_entry->label) == strlen(label)
+			&& strncmp(current_entry->label, label, strlen(current_entry->label)) == 0)
+		{
 			return current_entry->address;
 		}
 		current_entry = current_entry->next;

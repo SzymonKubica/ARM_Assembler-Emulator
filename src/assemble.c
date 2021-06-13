@@ -66,8 +66,8 @@ void parse_first (
 				// printf("%s",(*instructions_p)->mnemonic);
 				instructions++;
 				*num_instructions = *num_instructions + 1;
+				address+= 4;
 			}
-			address+= 4;
 		}
 		fclose(file);
 	}
