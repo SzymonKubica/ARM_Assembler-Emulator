@@ -12,6 +12,11 @@
 #define byte_length 8
 #define bytes_in_a_word 4
 
+#define lsl 0 // 00
+#define lsr 1 // 01 
+#define asr 2 // 10 
+#define ror 3 // 11 
+
 static word_t get_sdt_instruction_template(void) {
 	return 1 << 26; // Bits 27-26 in sdt instruction are always: 01.
 }
@@ -44,6 +49,14 @@ static void set_Rm(word_t *binary_instruction, int Rm) {
 
 static void set_offset(word_t *binary_instruction, int offset) {
 	*binary_instruction |= abs(offset);
+}
+
+static void set_shift_type(word_t *binary_instruction, byte_t type_code) {
+	*binary_instruction |= (type_code << 5);
+}
+
+static void set_shift_value(word_t *binary_instruction, int value) {
+	*binary_instruction |= (value << 7);
 }
 
 static void set_I_bit(word_t *binary_instruction) {
@@ -106,14 +119,15 @@ static int parse_base_register_number(char *address) {
 }
 
 static bool is_offset_by_expression(char *address) {
-	// If offset is specified by <#expression> char '#' is present in the string.
+	// If offset is specified by an expression only one 'r' is present.
 	char *ptr = address;
+	int r_counter = 0;
 	for (; *ptr != '\0'; ptr++) {
-		if (*ptr == '#') {
-			return true;
+		if (*ptr == 'r') {
+			r_counter++;
 		}
 	}
-	return false;
+	return r_counter == 1;
 }
 
 static int parse_index_register_number(char *address) {
@@ -135,6 +149,80 @@ static int parse_index_register_number(char *address) {
 	// ptr is adjusted to point to the first digit.
 	ptr++;
 	return parse_register_number(ptr);
+}
+
+// In case of offset specified by (shifted) register.
+static bool is_register_subtracted(char *address) {
+	assert(!is_offset_by_expression(address));
+	// Parses throught the address string until finds the first 'r'
+	// That 'r' indicates the reference to the base register.
+	char *ptr = address;
+	while (*ptr != 'r') {
+		ptr++;
+	}
+	assert(*ptr == 'r');
+	// ptr is adjusted to point to the next character. 
+	ptr++;
+	// Parses throught the address string until finds the second 'r'
+	// That 'r' indicates the reference to the index register.
+	while (*ptr != 'r') {
+		ptr++;
+	}
+	// If the character preceding 'r' is a minus sign, the offset is subtracted.
+	return (*(ptr - 1) == '-');
+}
+
+static bool is_shift_mnemonic(char * str) {
+	return (strncmp("lsl", str, 3) == 0) 
+		|| (strncmp("lsr", str, 3) == 0)
+		|| (strncmp("asr", str, 3) == 0)
+		|| (strncmp("ror", str, 3) == 0);
+}
+
+static byte_t parse_shift_type(char *address) {
+	assert(!is_offset_by_expression(address));
+	char *ptr = address;
+	while (*ptr != '\0' && !is_shift_mnemonic(ptr)) {
+		ptr++;
+	}
+	// Now ptr points to the first char in the shift mnemonic string.
+	if (strncmp("lsl", ptr, 3) == 0) {
+		return lsl;
+	}
+	if (strncmp("lsr", ptr, 3) == 0) {
+		return lsr;
+	}
+	if (strncmp("asr", ptr, 3) == 0) {
+		return asr;
+	}
+	if (strncmp("ror", ptr, 3) == 0) {
+		return ror;
+	}
+	// Should never be reached.
+	return 0;
+}
+
+static bool is_index_register_shifted(char *address) {
+	assert(!is_offset_by_expression(address));
+	char *ptr = address;
+	while (*ptr != '\0' ) {
+		if (is_shift_mnemonic(ptr)) {
+			return true;
+		}
+		ptr++;
+	}
+	return false;
+}
+
+static int parse_shift_value(char *address) {
+	assert(!is_offset_by_expression(address));
+	assert(is_index_register_shifted(address));
+	char *ptr = address;
+	while (*ptr != '#') {
+		ptr++;
+	}
+	ptr++;
+	return atoi(ptr);
 }
 
 static bool is_hex_string(char *str) {
@@ -289,7 +377,16 @@ void assemble_single_data_transfer(
 		int Rm = parse_index_register_number(address);
 		set_Rm(&result, Rm);
 		// If offset is positive, set Up bit
-		set_U_bit(&result);
+		if (!is_register_subtracted(address)) {
+			set_U_bit(&result);
+		}
+		if (is_index_register_shifted(address)) {
+			byte_t shift_type = parse_shift_type(address);
+			set_shift_type(&result, shift_type);
+			int shift_value = parse_shift_value(address);
+			set_shift_value(&result, shift_value);
+		}
+		
 
 		// TODO (optional): pre-indexing case: [Rn, {+/-} Rm{, <shift>}].
 		// TODO (optional): post-indexint case: [Rn],{+/-} Rm{, <shift>}.
