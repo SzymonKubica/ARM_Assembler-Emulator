@@ -10,5 +10,5 @@ void assemble_single_data_transfer(
 	FILE *file,
 	int current_address,
 	int end_address,
-	char *appended_memory,
+	char **appended_memory,
 	int *num_appended);

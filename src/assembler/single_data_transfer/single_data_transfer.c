@@ -182,7 +182,7 @@ void assemble_single_data_transfer(
 	FILE *file, 
 	int current_address, 
 	int end_address,
-	char *appended_memory,
+	char **appended_memory,
 	int *num_appended)
 {
 
@@ -222,7 +222,8 @@ void assemble_single_data_transfer(
 				set_Rn(&result, PC);
 				set_offset(&result, end_address - current_address - 4);
 				write_word(result, file);
-				write_to_appended_memory(argument, appended_memory);
+				write_to_appended_memory(argument, *appended_memory);
+				*appended_memory+=4;
 				*num_appended = *num_appended + 1;
 				return;
 			}

@@ -31,6 +31,9 @@ void parse_first (
 				add_entry(table, label, address);
 			} else {
 				char *mnemonic = strtok(line, " ,\n");
+				if (mnemonic == NULL) {
+					continue;
+				}
 				char **operand_fields = (char**) calloc (4, sizeof(char *));
 				
 				char *token = mnemonic;
@@ -97,6 +100,13 @@ int get_end_address(int num_instructions, int num_appended) {
 	return 4 * (num_instructions + num_appended - 1);
 }
 
+bool appended_memory_has_next(char *appended_memory_ptr) {
+	return (appended_memory_ptr[0] != 0) 
+		|| (appended_memory_ptr[1] != 0) 
+		|| (appended_memory_ptr[2] != 0) 
+		|| (appended_memory_ptr[3] != 0);
+}
+
 int main(int argc, char **argv) {
 	setbuf(stdout, NULL);
 	if (argc != 3) {
@@ -154,7 +164,7 @@ int main(int argc, char **argv) {
 					file, 
 					address, 
 					end_address, 
-					appended_memory_ptr,
+					&appended_memory_ptr,
 					&num_appended);
 				break;
 			case (mnemonic) BEQ:
@@ -186,12 +196,13 @@ int main(int argc, char **argv) {
 	}
 
 	// Additional memory addresses created by ldr with large arguments is appended.
-	for (; *appended_memory_ptr != 0; appended_memory_ptr+=4) {
+	for (; appended_memory_has_next(appended_memory); appended_memory+=4)
+	{
 		// Ensures that an entire word is loaded into the memory.
-		fputc(appended_memory_ptr[0], file);
-		fputc(appended_memory_ptr[1], file);
-		fputc(appended_memory_ptr[2], file);
-		fputc(appended_memory_ptr[3], file);
+		fputc(appended_memory[0], file);
+		fputc(appended_memory[1], file);
+		fputc(appended_memory[2], file);
+		fputc(appended_memory[3], file);
 	}
 
 	free_instructions(instructions);
