@@ -332,7 +332,6 @@ void assemble_single_data_transfer(
 				instruction_t instruction_as_mov = {"mov", instruction.operand_fields};
 				instruction_as_mov.operand_fields[1] = altered_address;
 				assemble_data_processing(instruction_as_mov, file);
-				return;
 			} else {
 				// The argument doesn't fit, putting the value of <expression> 
 				// at the end of the assembled program 
@@ -347,8 +346,9 @@ void assemble_single_data_transfer(
 				write_to_appended_memory(argument, *appended_memory);
 				*appended_memory+=4;
 				*num_appended = *num_appended + 1;
-				return;
 			}
+			free(address);
+			return;
 		}
 	}
 
@@ -388,5 +388,6 @@ void assemble_single_data_transfer(
 		}
 	}
 	write_word(result, file);
+	free(address);
 }
 	

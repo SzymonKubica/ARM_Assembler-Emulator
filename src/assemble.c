@@ -123,6 +123,12 @@ int main(int argc, char **argv) {
 	assert(table != NULL);
 
 	char *appended_memory = malloc(MAX_NUM_INSTRUCTIONS * 4);
+
+	if (!appended_memory) {
+		perror("couldn't assign appended_memory");
+		exit(EXIT_FAILURE);
+	}
+	
 	char *appended_memory_ptr = appended_memory;
 	int num_instructions;
 	int num_appended;
@@ -194,7 +200,7 @@ int main(int argc, char **argv) {
 				assemble_andeq(file);
 		}
 	}
-
+	appended_memory_ptr = appended_memory;
 	// Additional memory addresses created by ldr with large arguments is appended.
 	for (; appended_memory_has_next(appended_memory); appended_memory+=4)
 	{
@@ -208,6 +214,8 @@ int main(int argc, char **argv) {
 	free_instructions(instructions);
 	free(instructions);
 	table_destroy(table);
+	free(appended_memory_ptr);
+	fclose(file);
 
 	return EXIT_SUCCESS;
 }
