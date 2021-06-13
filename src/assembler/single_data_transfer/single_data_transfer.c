@@ -386,10 +386,6 @@ void assemble_single_data_transfer(
 			int shift_value = parse_shift_value(address);
 			set_shift_value(&result, shift_value);
 		}
-		
-
-		// TODO (optional): pre-indexing case: [Rn, {+/-} Rm{, <shift>}].
-		// TODO (optional): post-indexint case: [Rn],{+/-} Rm{, <shift>}.
 	}
 	write_word(result, file);
 }
