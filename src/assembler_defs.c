@@ -5,87 +5,122 @@
 
 #include "assembler_defs.h"
 
-byte_t get_Register (char *string){
+byte_t get_Register (char *string)  {
         assert (*string == 'r');
         return strtol(++string, NULL, 10);
 }
 
-mnemonic get_Mnemonic (char *m){
-	if (strcmp(m, "add") == 0){
+mnemonic get_Mnemonic (char *m)  {
+	if (strncmp(m, "add", 3) == 0) {
 		return (mnemonic) ADD;
 	}
-	else if (strcmp(m, "sub") == 0){
+	if (strncmp(m, "sub", 3) == 0) {
 		return (mnemonic) SUB;
 	}
-	else if (strcmp(m, "rsb") == 0){
+	if (strncmp(m, "rsb", 3) == 0) {
 		return (mnemonic) RSB;
 	}
-	else if (strcmp(m, "and") == 0){
+	if (strncmp(m, "andeq", 5) == 0) {
+		return (mnemonic) ANDEQ;
+	}
+	if (strncmp(m, "and", 3) == 0) {
 		return (mnemonic) AND;
 	}
-	else if (strcmp(m, "eor") == 0){
+	if (strncmp(m, "eor", 3) == 0) {
 		return (mnemonic) EOR;
 	}
-	else if (strcmp(m, "orr") == 0){
+	if (strncmp(m, "orr", 3) == 0) {
 		return (mnemonic) ORR;
 	}
-	else if (strcmp(m, "mov") == 0){
+	if (strncmp(m, "mov", 3) == 0) {
 		return (mnemonic) MOV;
 	}
-	else if (strcmp(m, "tst") == 0){
+	if (strncmp(m, "tst", 3) == 0) {
 		return (mnemonic) TST;
 	}
-	else if (strcmp(m, "teq") == 0){
+	if (strncmp(m, "teq", 3) == 0) {
 		return (mnemonic) TEQ;
 	}
-	else if (strcmp(m, "cmp") == 0){
+	if (strncmp(m, "cmp", 3) == 0) {
 		return (mnemonic) CMP;
 	}
-	else if (strcmp(m, "mul") == 0){
+	if (strncmp(m, "mul", 3) == 0) {
 		return (mnemonic) MUL;
 	}
-	else if (strcmp(m, "mla") == 0){
+	if (strncmp(m, "eor", 3) == 0) {
+		return (mnemonic) EOR;
+	}
+	if (strncmp(m, "orr", 3) == 0) {
+		return (mnemonic) ORR;
+	}
+	if (strncmp(m, "mov", 3) == 0) {
+		return (mnemonic) MOV;
+	}
+	if (strncmp(m, "tst", 3) == 0) {
+		return (mnemonic) TST;
+	}
+	if (strncmp(m, "teq", 3) == 0) {
+		return (mnemonic) TEQ;
+	}
+	if (strncmp(m, "cmp", 3) == 0) {
+		return (mnemonic) CMP;
+	}
+	if (strncmp(m, "mul", 3) == 0) {
+		return (mnemonic) MUL;
+	}
+	if (strncmp(m, "mla", 3) == 0) {
 		return (mnemonic) MLA;
 	}
-	else if (strcmp(m, "ldr") == 0){
+	if (strncmp(m, "ldr", 3) == 0) {
 		return (mnemonic) LDR;
 	}
-	else if (strcmp(m, "str") == 0){
+	if (strncmp(m, "str", 3) == 0) {
 		return (mnemonic) STR;
 	}
-	else if (strcmp(m, "beq") == 0){
+	if (strncmp(m, "beq", 3) == 0) {
 		return (mnemonic) BEQ;
 	}
-	else if (strcmp(m, "bne") == 0){
+	if (strncmp(m, "bne", 3) == 0) {
 		return (mnemonic) BNE;
 	}
-	else if (strcmp(m, "bge") == 0){
+	if (strncmp(m, "bge", 3) == 0) {
 		return (mnemonic) BGE;
 	}
-	else if (strcmp(m, "bgt") == 0){
+	if (strncmp(m, "bgt", 3) == 0) {
 		return (mnemonic) BGT;
 	}
-	else if (strcmp(m, "ble") == 0){
+	if (strncmp(m, "ble", 3) == 0) {
 		return (mnemonic) BLE;
 	}
-	else if (strcmp(m, "blt") == 0){
+	if (strncmp(m, "blt", 3) == 0) {
 		return (mnemonic) BLT;
 	}
-	else if (strcmp(m, "b") == 0){
-		return (mnemonic) B;
-	}
-	else if (strcmp(m, "lsl") == 0){
+	if (strncmp(m, "lsl", 3) == 0) {
 		return (mnemonic) LSL;
 	}
-	else if (strcmp(m, "andeq") == 0){
-		return (mnemonic) ANDEQ;
-	} else {
-		perror("mnemonic not found");
-		exit(EXIT_FAILURE);
+	if (strncmp(m, "lsr", 3) == 0) {
+		return (mnemonic) LSR;
 	}
+	if (strncmp(m, "asr", 3) == 0) {
+		return (mnemonic) ASR;
+	}
+	if (strncmp(m, "ror", 3) == 0) {
+		return (mnemonic) ROR;
+	}
+	if (strncmp(m, "b", 1) == 0) {
+		return (mnemonic) B;
+	}
+	perror("mnemonic not found");
+	exit(EXIT_FAILURE);
 }
 
-void write_to_file (FILE *file, byte_t firstByte, byte_t secondByte, byte_t thirdByte, byte_t fourthByte) {
+void write_to_file (
+	FILE *file, 
+	byte_t firstByte, 
+	byte_t secondByte, 
+	byte_t thirdByte, 
+	byte_t fourthByte) 
+{
 	fputc(fourthByte, file);
 	fputc(thirdByte, file);
 	fputc(secondByte, file);

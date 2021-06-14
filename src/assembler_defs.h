@@ -46,6 +46,9 @@ typedef enum {
 	BLE,
 	B,
 	LSL,
+	LSR,
+	ASR,
+	ROR,
 	ANDEQ
 } mnemonic; 	
 

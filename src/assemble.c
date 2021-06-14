@@ -184,7 +184,10 @@ int main(int argc, char **argv) {
 				char *op_fields[4] = { (*head)->operand_fields[0],
 							(*head)->operand_fields[0],
 							string};	
-				instruction_t lsl = (instruction_t) {.mnemonic = "mov", .operand_fields = op_fields}; 
+				instruction_t lsl = (instruction_t) {
+					.mnemonic = "mov", 
+					.operand_fields = op_fields}; 
+
 				assemble_data_processing(lsl, file);
 
 				free(string);
@@ -192,6 +195,12 @@ int main(int argc, char **argv) {
 				}
 			case (mnemonic) ANDEQ:
 				assemble_andeq(file);
+				break;
+			case (mnemonic) LSR:
+			case (mnemonic) ASR:
+			case (mnemonic) ROR:
+				perror("Unsupported use of shift type mnemonic.");
+				exit(EXIT_FAILURE);
 		}
 	}
 
