@@ -256,12 +256,7 @@ static int parse_offset_by_expression(char *address) {
 static int parse_argument(char *address) {
 	assert(address[0] == '=');
 	// Initialising ptr to point to the first digit.
-	char *ptr = address + 1;
-	if (address[2] == 'x') {
-		// Address is in hexadecimal.
-		return strtoul(ptr, NULL, 16);
-	}
-	return atoi(ptr);
+	return strtol(++address, NULL,0);
 }
 
 static char * get_address(char **operand_fields) {
@@ -326,7 +321,7 @@ void assemble_single_data_transfer(
 				// According to the spec we should use mov instead.
 				// as the argument fits inside the argument of mov.
 				// We perform an assembly of mov instead.  
-				char *altered_address = malloc(strlen(address));
+				char *altered_address = calloc(1, strlen(address));
 				strncpy(altered_address, address, strlen(address));
 				altered_address[0] = '#';
 				instruction_t instruction_as_mov = {"mov", instruction.operand_fields};
