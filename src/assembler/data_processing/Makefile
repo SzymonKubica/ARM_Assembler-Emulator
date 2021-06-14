@@ -12,5 +12,5 @@ clean:
 $(LIB): $(LIBOBJ)
 	ar rcs $(LIB) $(LIBOBJ)
 
-
+data_processing.o: data_processing.h ../../assembler_defs.h
 

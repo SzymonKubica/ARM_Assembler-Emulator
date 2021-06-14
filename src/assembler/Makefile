@@ -18,9 +18,9 @@ libs:
 
 test: 
 	cd test_utils; make
-	cd data_processing; make test
-	cd multiply; make test
+	#cd data_processing; make test
+	#cd multiply; make test
 	cd single_data_transfer; make test
 	cd branch; make test
 	cd symbol_table; make test
-	cd special; make test
+	#cd special; make test
