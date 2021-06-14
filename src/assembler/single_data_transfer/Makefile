@@ -1,8 +1,8 @@
 CC     = gcc
-CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../data_processing
+CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic -I../data_processing -I../test_utils
 LIB    = libsingle_data_transfer.a
 LIBOBJ = single_data_transfer.o
-LDLIBS = -L../data_processing -ldata_processing
+LDLIBS = -L../data_processing -ldata_processing -L../test_utils -ltest_utils
 BUILD  = $(LIB) 
 
 all: $(BUILD)
