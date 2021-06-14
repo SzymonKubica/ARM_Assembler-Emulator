@@ -1,5 +1,6 @@
 #include "../../defns.h"
 #include "../../assembler_defs.h"
+#include "data_processing.h"
 
 /*
  * Single Data Transfer Instruction Assembler module.

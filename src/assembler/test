@@ -1,0 +1,20 @@
+#!/bin/bash
+
+echo -e "Testing symbol_table:"
+cd symbol_table
+./symbol_table_test
+cd ..
+echo " "
+
+echo -e "Testing single_data_transfer:"
+cd single_data_transfer
+./single_data_transfer_test
+cd ..
+echo " "
+
+echo -e "Testing branch:"
+cd branch 
+./branch_test
+cd ..
+echo " "
+
