@@ -122,8 +122,6 @@ int main(int argc, char **argv) {
 	symbol_table_t *table = malloc(sizeof(symbol_table_t));
 	assert(table != NULL);
 
-	char *appended_memory = malloc(MAX_NUM_INSTRUCTIONS * 4);
-	char *appended_memory_ptr = appended_memory;
 	int num_instructions;
 	int num_appended;
 	int end_address;
@@ -131,7 +129,16 @@ int main(int argc, char **argv) {
 	symbol_table_init(table);
 	
 	parse_first (table, instructions, &num_instructions, assembly);
+	
+	char *appended_memory = calloc(1, num_instructions * 4);
 
+	if (!appended_memory) {
+		perror("couldn't assign appended_memory");
+		exit(EXIT_FAILURE);
+	}
+	
+	char *appended_memory_ptr = appended_memory;
+	
 	instruction_t **head = instructions;
 	
 	FILE *file = fopen(argv[2], "wb");
@@ -194,20 +201,24 @@ int main(int argc, char **argv) {
 				assemble_andeq(file);
 		}
 	}
-
+	appended_memory_ptr = appended_memory;
 	// Additional memory addresses created by ldr with large arguments is appended.
 	for (; appended_memory_has_next(appended_memory); appended_memory+=4)
 	{
 		// Ensures that an entire word is loaded into the memory.
-		fputc(appended_memory[0], file);
-		fputc(appended_memory[1], file);
-		fputc(appended_memory[2], file);
-		fputc(appended_memory[3], file);
+		// write_to_file writes in little endian
+
+		write_to_file(file, appended_memory[3], 
+		appended_memory[2], 
+		appended_memory[1],
+		appended_memory[0]);
 	}
 
 	free_instructions(instructions);
 	free(instructions);
 	table_destroy(table);
+	free(appended_memory_ptr);
+	fclose(file);
 
 	return EXIT_SUCCESS;
 }
