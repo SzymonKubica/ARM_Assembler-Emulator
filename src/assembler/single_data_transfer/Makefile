@@ -15,7 +15,9 @@ $(LIB): $(LIBOBJ)
 
 test: single_data_transfer_test
 
-single_data_transfer.o: single_data_transfer.h
+single_data_transfer.o: single_data_transfer.h 
 
-single_data_transfer_test: single_data_transfer_test.o single_data_transfer.o
-single_data_transfer_test.o: single_data_transfer.h
+single_data_transfer_test: single_data_transfer_test.o single_data_transfer.o ../../assembler_defs.o
+single_data_transfer_test.o: single_data_transfer.h ../../assembler_defs.h 
+
+

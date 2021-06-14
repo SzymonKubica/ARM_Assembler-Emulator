@@ -3,14 +3,15 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "../../defns.h"
 #include "single_data_transfer.h"
 #include "test_utils.h"
-#include "../../defns.h"
 
 void run_test(
-	char *test_name
+	char *test_name,
 	char *mnemonic, 
-	char **operand_fields;
+	char *rd,
+	char *address,
 	char *file_name, 
 	int current_address, 
 	int end_address,
@@ -18,6 +19,11 @@ void run_test(
 	int *num_appended,
 	word_t expected_result,
 	bool is_logging_enabled) {
+
+	// Initialising arguments.
+	char **operand_fields = (char **) calloc(4, sizeof(char *));
+	operand_fields[0] = rd;
+	operand_fields[1] = address;
 
 	instruction_t instruction = {mnemonic, operand_fields};
 
@@ -45,9 +51,8 @@ void run_test(
 	word_t result = get_word(buffer);
 
 	fclose(file_read);
-	free(operand_fields);
 
-	testcond(result == 0xe5832000, "case: str r2, [r3]");
+	testcond(result == expected_result, test_name);
 
 	if (is_logging_enabled) {
 		log_output(result);	
@@ -55,7 +60,7 @@ void run_test(
 
 }
 
-// This test case simulates the assembly of a "str r2, [r3]" instruction from p17.
+/*
 void test1() {
 
 	// Initialising arguments.
@@ -145,9 +150,53 @@ void test3() {
 
 	testcond(result == 0xe4912005, "case: ldr r2, [r1] #5");
 }
+*/
 
 int main(void) {
-	test1();	
-	test2();
-	test3();
+	char *appended_memory = malloc(4);
+	int num_appended = 0;
+
+	// Test: assembly of a "str r2, [r3]" instruction from p17.
+	run_test(
+	"str r2, [r3]", 
+	"str",
+	"r2",
+	"[r3]",
+	"test_binaries/test1.bin",
+	0x20,
+	0x20,
+	&appended_memory,
+	&num_appended,
+	0xe5832000,
+	false);
+
+	// Test: assembly of a "str r0, [r1, #28]" instruction from testsuite.
+	run_test(
+	"str01.s: str r0, [r1, #28]", 
+	"str",
+	"r0",
+	"[r1, #28]",
+	"test_binaries/test2.bin",
+	0x4,
+	0xc,
+	&appended_memory,
+	&num_appended,
+	0xe581001c,
+	false);
+
+	// Test: assembly of a "ldr r2, [r1], #5" instruction from testsuite.
+	run_test(
+	"opt_ldr11.s: ldr r2, [r1], #5", 
+	"ldr",
+	"r2",
+	"[r1], #5",
+	"test_binaries/test3.bin",
+	0x4,
+	0x8,
+	&appended_memory,
+	&num_appended,
+	0xe4912005,
+	false);
+
+	free(appended_memory);
 }

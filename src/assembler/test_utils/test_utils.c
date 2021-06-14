@@ -30,9 +30,9 @@ void print_binary_little_Endian(word_t word) {
 
 // Prints binary word in big-Endian 
 void print_binary_big_Endian(word_t word) {
-	for (int i = 3; i >= 0; i--, word >>= 8) {
+	for (int i = 3; i >= 0; i--) {
 		int shift = (8 * i);
-		print_byte(word & ((255 /* 11111111 */ << shift) >> shift));
+		print_byte((word & (255 /* 11111111 */ << shift)) >> shift);
 	}
 	printf("\n");
 }
@@ -60,7 +60,7 @@ void log_output(word_t output) {
 	// Prints the hex value of output for finding expected values.
 	printf("Hex value: %08x\n", output);
 
-	printf("Value of output in bit-Endian: \n");
+	printf("Value of output in big-Endian: \n");
 	// Prints the result in big-Endian. 
 	print_binary_big_Endian(output);
 }
