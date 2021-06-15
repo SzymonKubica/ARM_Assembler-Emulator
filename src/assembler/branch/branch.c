@@ -119,7 +119,8 @@ static word_t parse_address(char **operand_fields) {
 	} 
 	// The pointer is adjusted to point to the first digit.
 	ptr++;
-	return atoi(ptr);
+	// The address should be in hexadecimal.
+	return strtoul(ptr, NULL, 16);
 }
 
 // Returns nth byte in a word instruction, byte indices start at 1.
