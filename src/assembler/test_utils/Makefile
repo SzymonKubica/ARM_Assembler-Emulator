@@ -1,7 +1,7 @@
 CC     = gcc
 CFLAGS = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic 
-LIB    = libdata_processing.a
-LIBOBJ = data_processing.o 
+LIB    = libtest_utils.a
+LIBOBJ = test_utils.o 
 BUILD  = $(LIB)
 
 all: $(BUILD)
@@ -12,5 +12,4 @@ clean:
 $(LIB): $(LIBOBJ)
 	ar rcs $(LIB) $(LIBOBJ)
 
-data_processing.o: data_processing.h ../../assembler_defs.h
-
+test_utils.o: test_utils.h

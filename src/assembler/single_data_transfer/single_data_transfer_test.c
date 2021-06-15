@@ -3,40 +3,64 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "single_data_transfer.h"
 #include "../../defns.h"
+#include "single_data_transfer.h"
+#include "test_utils.h"
 
-void testcond(bool condition, char *test_name) {
-	printf( "T %s: %s\n", test_name, (condition ? "OK" : "FAIL"));
-}
+void run_test(
+	char *test_name,
+	char *mnemonic, 
+	char *rd,
+	char *address,
+	char *file_name, 
+	int current_address, 
+	int end_address,
+	char **appended_memory_ptr,
+	int *num_appended,
+	word_t expected_result,
+	bool is_logging_enabled) {
 
-void print_byte(byte_t byte) {
-	bit_t bits[8];
-	for (int i = 1; i <= 8; i++) {
-		bits[8 - i] = byte & 1;
-		byte >>= 1;
+	// Initialising arguments.
+	char **operand_fields = (char **) calloc(4, sizeof(char *));
+	operand_fields[0] = rd;
+	operand_fields[1] = address;
+
+	instruction_t instruction = {mnemonic, operand_fields};
+
+	FILE *file;
+	file = fopen(file_name, "wb");
+	
+	if (file) {
+		assemble_single_data_transfer(
+			instruction, 
+			file, 
+			current_address, 
+			end_address, 
+			appended_memory_ptr, 
+			num_appended);
 	}
-	for (int i = 0; i < 8; i++) {
-		printf("%d", bits[i]);
+	
+	fclose(file);
+	free(operand_fields);
+
+	FILE *file_read;
+	file_read = fopen(file_name, "rb");
+
+	byte_t buffer[4];
+	fread(buffer, sizeof(buffer), 1, file_read);
+	word_t result = get_word(buffer);
+
+	fclose(file_read);
+
+	testcond(result == expected_result, test_name);
+
+	if (is_logging_enabled) {
+		log_output(result);	
 	}
-	printf(" ");
+
 }
 
-void print_binary(word_t word) {
-	for (int i = 0; i < 4; i++, word >>= 8) {
-		print_byte(word & 255);
-	}
-	printf("\n");
-}
-
-void log_output_for_debugging(word_t output) {
-	// Prints the result in the same format as on p17 in the spec.
-	print_binary(output);
-	// Prints the actual value of the result in hexadecimal.
-	printf("%x\n", output);
-}
-
-// This test case simulates the assembly of a "str r2, [r3]" instruction from p17.
+/*
 void test1() {
 
 	// Initialising arguments.
@@ -126,9 +150,53 @@ void test3() {
 
 	testcond(result == 0xe4912005, "case: ldr r2, [r1] #5");
 }
+*/
 
 int main(void) {
-	test1();	
-	test2();
-	test3();
+	char *appended_memory = malloc(4);
+	int num_appended = 0;
+
+	// Test: assembly of a "str r2, [r3]" instruction from p17.
+	run_test(
+	"str r2, [r3]", 
+	"str",
+	"r2",
+	"[r3]",
+	"test_binaries/test1.bin",
+	0x20,
+	0x20,
+	&appended_memory,
+	&num_appended,
+	0xe5832000,
+	false);
+
+	// Test: assembly of a "str r0, [r1, #28]" instruction from testsuite.
+	run_test(
+	"str01.s: str r0, [r1, #28]", 
+	"str",
+	"r0",
+	"[r1, #28]",
+	"test_binaries/test2.bin",
+	0x4,
+	0xc,
+	&appended_memory,
+	&num_appended,
+	0xe581001c,
+	false);
+
+	// Test: assembly of a "ldr r2, [r1], #5" instruction from testsuite.
+	run_test(
+	"opt_ldr11.s: ldr r2, [r1], #5", 
+	"ldr",
+	"r2",
+	"[r1], #5",
+	"test_binaries/test3.bin",
+	0x4,
+	0x8,
+	&appended_memory,
+	&num_appended,
+	0xe4912005,
+	false);
+
+	free(appended_memory);
 }

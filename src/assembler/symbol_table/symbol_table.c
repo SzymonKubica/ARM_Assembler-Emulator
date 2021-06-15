@@ -29,6 +29,7 @@ static symbol_table_entry_t * new_entry(char *label, int address) {
 }
 
 static void free_symbol_table_entry(symbol_table_entry_t *entry) {
+	free(entry->label);
 	free(entry);
 }  
 
