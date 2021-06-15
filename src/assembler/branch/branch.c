@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "../../assembler_defs.h"
 #include "branch.h"
@@ -97,6 +98,30 @@ static void set_offset(word_t *instruction, word_t offset) {
 	*instruction |= offset;
 }
 
+static bool is_label_expression(char **operand_fields) {
+	char *expression = operand_fields[0];
+	char *ptr = expression;
+	while (*ptr != '\0') {
+		if (*ptr == '=') {
+			return false;
+		}
+		ptr++;
+	} 
+	return true;
+}
+
+static word_t parse_address(char **operand_fields) {
+	assert(!is_label_expression(operand_fields));
+	char *expression = operand_fields[0];
+	char *ptr = expression;
+	while (*ptr != '=') {
+		ptr++;
+	} 
+	// The pointer is adjusted to point to the first digit.
+	ptr++;
+	return atoi(ptr);
+}
+
 // Returns nth byte in a word instruction, byte indices start at 1.
 static byte_t get_Nth_byte(int n, word_t word) {
 	return (byte_t) (word >> ((bytes_in_a_word - n) * byte_length));
@@ -104,10 +129,12 @@ static byte_t get_Nth_byte(int n, word_t word) {
 
 // Writes to the file in little Endian.
 void write_word(word_t word, FILE *file) {
-	fputc(get_Nth_byte(4, word), file);
-	fputc(get_Nth_byte(3, word), file);
-	fputc(get_Nth_byte(2, word), file);
-	fputc(get_Nth_byte(1, word), file);
+	write_to_file(
+		file,
+		get_Nth_byte(1, word),
+		get_Nth_byte(2, word),
+		get_Nth_byte(3, word),
+		get_Nth_byte(4, word));
 }
 
 void assemble_branch(
@@ -116,16 +143,20 @@ void assemble_branch(
 	symbol_table_t *table, 
 	int current_address) 
 {
-	// TODO: implement the case when the <expression> is not a label.
-	char *label = (instruction.operand_fields)[0];
-	nibble_t cond = get_cond(instruction.mnemonic); 
+	int destination_address;
+
+	if (is_label_expression(instruction.operand_fields)) {
+		char *label = (instruction.operand_fields)[0];
+		destination_address = get_address(table, label);
+	} else {
+		destination_address = parse_address(instruction.operand_fields);
+	}
 
 	word_t binary_instruction = get_branch_instruction_template();
-
-
+	// Setting the cond.
+	nibble_t cond = get_cond(instruction.mnemonic); 
 	set_cond(&binary_instruction, cond);
 
-	int destination_address = get_address(table, label);
 
 	int offset_32_bits = destination_address - current_address - pipeline_offset;
 

@@ -333,9 +333,7 @@ void assemble_single_data_transfer(
 		if (address[0] == '=') {
 			word_t argument = parse_argument(address);
 			if (argument <= 0xff) {
-				// According to the spec we should use mov instead.
-				// as the argument fits inside the argument of mov.
-				// We perform an assembly of mov instead.  
+				// We perform an assembly of mov instead as the argument is small.  
 				char *altered_address = calloc(1, strlen(address));
 				strncpy(altered_address, address, strlen(address));
 				altered_address[0] = '#';
