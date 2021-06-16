@@ -6,6 +6,12 @@ cd symbol_table
 cd ..
 echo " "
 
+echo -e "Testing data_processing:"
+cd data_processing
+./data_processing_test
+cd ..
+echo " "
+
 echo -e "Testing single_data_transfer:"
 cd single_data_transfer
 ./single_data_transfer_test
